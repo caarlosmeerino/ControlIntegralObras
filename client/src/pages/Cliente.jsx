@@ -19,7 +19,7 @@ export function ProyectoFila({ o, mostrarCliente }) {
           <span className="lista-titulo">{o.nombre}</span>
           {o.resumen.retrasada ? <Status estado="retrasado" small /> : <Status estado={o.estado} map={f.ESTADOS_OBRA} small />}
         </div>
-        <div className="lista-sub">{[o.codigo, mostrarCliente && o.cliente, o.ciudad, o.fecha_entrega && `entrega ${f.fecha(o.fecha_entrega)}`, f.t(o.resumen.kg_unicos, 1)].filter(Boolean).join(' · ')}</div>
+        <div className="lista-sub">{[o.codigo, mostrarCliente && o.cliente, o.ciudad, o.fecha_entrega && `fin ${f.fecha(o.fecha_entrega)}`, f.kg(o.resumen.kg_unicos)].filter(Boolean).join(' · ')}</div>
         <div className="mini-avance">
           <span>Fabricación</span><Bar value={fab} tone={fab >= 100 ? 'ok' : ''} /><b>{f.num(fab)} %</b>
           <span>Montaje</span><Bar value={mon} tone={mon >= 100 ? 'ok' : ''} /><b>{f.num(mon)} %</b>

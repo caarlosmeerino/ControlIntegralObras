@@ -56,6 +56,12 @@ export async function sembrar({ soloPrueba = false, reset = false, log = console
       }
     }
     await db.query(`UPDATE obra_fases SET fecha_inicio_prevista=$2, fecha_fin_prevista=$3 WHERE obra_id=$1`, [ob.id, fecha(40), enDias(30)]);
+    // Medidas por unidad (m² de pintura y metros lineales aproximados) y fases del proyecto
+    await db.query(`UPDATE piezas SET m2_unitario = round(peso_unitario_kg * 0.024, 2), ml_unitario = round(peso_unitario_kg / 110, 2) WHERE obra_id=$1`, [ob.id]);
+    await db.query(`UPDATE obras SET m2_previstos = 492.5, ml_previstos = 186.5 WHERE id=$1`, [ob.id]);
+    await db.query(`INSERT INTO etapas (obra_id, orden, nombre, fecha_inicio, fecha_fin) VALUES ($1,1,'Fase 1 · Pórticos y pilares',$2,$3),($1,2,'Fase 2 · Cubierta y cerchas',$4,$5)`,
+      [ob.id, fecha(40), fecha(5), fecha(4), enDias(30)]);
+    await db.query(`UPDATE obras SET fecha_inicio=$2, fecha_entrega=$3 WHERE id=$1`, [ob.id, fecha(40), enDias(30)]);
     await db.query(`UPDATE obras SET ciudad = trim(split_part(direccion, ',', array_length(string_to_array(direccion, ','), 1))) WHERE ciudad = ''`);
     console.log('· Obra de prueba OB-PRUEBA creada (5 marcas, 18 unidades, 20.520 kg)');
     if (soloPrueba) return;
@@ -173,6 +179,11 @@ export async function sembrar({ soloPrueba = false, reset = false, log = console
           [fecha(n), T[t].id, demo[0].id, pm.id, 8 * T[t].coste, U.montaje.id]);
       }
       await db.query('INSERT INTO parte_montaje_medios VALUES ($1,$2,6),($1,$3,8)', [pm.id, M['Grúa autopropulsada 50 t'], M['Plataforma elevadora 16 m']]);
+    }
+    for (const d of demo) {
+      await db.query(`UPDATE piezas SET m2_unitario = round(peso_unitario_kg * 0.024, 2), ml_unitario = round(peso_unitario_kg / 110, 2) WHERE obra_id=$1`, [d.id]);
+      await db.query(`UPDATE obras SET m2_previstos = round(kg_previstos_fab * 0.024), ml_previstos = round(kg_previstos_fab / 110) WHERE id=$1`, [d.id]);
+      await db.query(`INSERT INTO etapas (obra_id, orden, nombre, fecha_inicio, fecha_fin) SELECT id, 1, 'Fase 1', fecha_inicio, fecha_entrega FROM obras WHERE id=$1`, [d.id]);
     }
     await db.query(`UPDATE obras SET ciudad = trim(split_part(direccion, ',', array_length(string_to_array(direccion, ','), 1))) WHERE ciudad = ''`);
     console.log('· Datos de demostración: 3 obras, 13 trabajadores, 6 equipos, 4 medios, partes de horas y de montaje');

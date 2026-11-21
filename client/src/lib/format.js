@@ -51,3 +51,10 @@ export const AMBITOS = { oficina: 'Oficina', taller: 'Taller', obra: 'Obra' };
 export const ROLES = { admin: 'Administrador', director: 'Director de producción', jefe_taller: 'Jefe de taller', encargado_montaje: 'Encargado de montaje', operario: 'Operario', administracion: 'Administración' };
 // Colores de fase (para barras apiladas de ubicación)
 export const COLOR_FASE = ['#c7c7cc', '#aeaeb2', '#64d2ff', '#0a84ff', '#5e5ce6', '#bf5af2', '#ff9f0a', '#30d158', '#248a3d', '#8e8e93', '#636366'];
+export const m2 = (v) => (v == null ? '—' : `${nf(0, 2).format(Number(v))} m²`);
+export const ml = (v) => (v == null ? '—' : `${nf(0, 2).format(Number(v))} ml`);
+/** Enlace a Google Maps con la dirección completa */
+export const mapsUrl = (o) => {
+  const q = [o.direccion, o.ciudad, o.provincia && o.provincia !== o.ciudad ? o.provincia : '', 'España'].filter(Boolean).join(', ');
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+};

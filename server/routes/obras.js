@@ -14,19 +14,44 @@ function leerObra(b) {
     codigo: str(b.codigo, 'código', { max: 40 }).toUpperCase(),
     nombre: str(b.nombre, 'nombre', { required: true, max: 200 }),
     cliente: str(b.cliente, 'cliente'),
-    direccion: str(b.direccion, 'dirección de montaje'),
+    direccion: str(b.direccion, 'dirección', { max: 300 }),
     ...resolverCiudad(str(b.ciudad, 'ciudad', { max: 120 }), str(b.provincia, 'provincia', { max: 80 })),
     responsable_id: b.responsable_id ? num(b.responsable_id, 'responsable', { int: true }) : null,
-    fecha_inicio: date(b.fecha_inicio, 'inicio'),
-    fecha_entrega: date(b.fecha_entrega, 'entrega'),
     kg_contratados: num(b.kg_contratados, 'kg contratados', { min: 0, def: 0 }),
-    kg_previstos_fab: num(b.kg_previstos_fab, 'kg previstos de fabricación', { min: 0, def: 0 }),
-    kg_previstos_montaje: num(b.kg_previstos_montaje, 'kg previstos de montaje', { min: 0, def: 0 }),
-    presupuesto: num(b.presupuesto, 'presupuesto', { min: 0, def: 0 }),
+    kg_previstos_fab: num(b.kg_previstos_fab, 'peso previsto (kg)', { min: 0, def: 0 }),
+    kg_previstos_montaje: num(b.kg_previstos_montaje, 'peso previsto de montaje (kg)', { min: 0, def: 0 }),
+    m2_previstos: num(b.m2_previstos, 'superficie (m²)', { min: 0, def: 0 }),
+    ml_previstos: num(b.ml_previstos, 'longitud (ml)', { min: 0, def: 0 }),
     estado: oneOf(b.estado, 'estado', ESTADOS, 'planificada'),
     observaciones: str(b.observaciones, 'observaciones', { max: 5000 }),
   };
 }
+
+/** Fases del proyecto (etapas): nombre editable y fechas de inicio y fin */
+function leerEtapas(lista) {
+  if (lista === undefined) return undefined;
+  if (!Array.isArray(lista)) throw bad('Las fases no tienen un formato válido.');
+  return lista.map((e, i) => {
+    const et = { nombre: str(e.nombre, `nombre de la fase ${i + 1}`, { max: 120 }) || `Fase ${i + 1}`,
+      fecha_inicio: date(e.fecha_inicio, `inicio de la fase ${i + 1}`), fecha_fin: date(e.fecha_fin, `fin de la fase ${i + 1}`) };
+    if (et.fecha_inicio && et.fecha_fin && et.fecha_fin < et.fecha_inicio) throw bad(`En «${et.nombre}» la fecha de fin es anterior a la de inicio.`);
+    return et;
+  });
+}
+
+async function guardarEtapas(db, obraId, etapas) {
+  if (etapas === undefined) return;
+  await db.query('DELETE FROM etapas WHERE obra_id=$1', [obraId]);
+  for (const [i, e] of etapas.entries()) {
+    await db.query('INSERT INTO etapas (obra_id, orden, nombre, fecha_inicio, fecha_fin) VALUES ($1,$2,$3,$4,$5)', [obraId, i + 1, e.nombre, e.fecha_inicio, e.fecha_fin]);
+  }
+  // Las fechas generales del proyecto salen de sus fases
+  await db.query(`UPDATE obras SET fecha_inicio = (SELECT MIN(fecha_inicio) FROM etapas WHERE obra_id=$1),
+                  fecha_entrega = (SELECT MAX(fecha_fin) FROM etapas WHERE obra_id=$1) WHERE id=$1`, [obraId]);
+}
+
+const COLS = ['codigo', 'nombre', 'cliente', 'direccion', 'ciudad', 'provincia', 'responsable_id', 'kg_contratados', 'kg_previstos_fab',
+  'kg_previstos_montaje', 'm2_previstos', 'ml_previstos', 'estado', 'observaciones'];
 
 r.get('/', requirePerm('obras.ver'), wrap(async (req, res) => {
   let obras = await resumenObras({ query: q });
@@ -37,7 +62,7 @@ r.get('/', requirePerm('obras.ver'), wrap(async (req, res) => {
 
 r.post('/', requirePerm('obras.editar'), wrap(async (req, res) => {
   const o = leerObra(req.body);
-  if (o.fecha_inicio && o.fecha_entrega && o.fecha_entrega < o.fecha_inicio) throw bad('La fecha de entrega no puede ser anterior a la de inicio.');
+  const etapas = leerEtapas(req.body.etapas) ?? [];
   const obra = await tx(async (db) => {
     if (!o.codigo) {
       // Código automático: OB-AAAA-NNN
@@ -46,10 +71,10 @@ r.post('/', requirePerm('obras.editar'), wrap(async (req, res) => {
       o.codigo = `OB-${y}-${String(m.n).padStart(3, '0')}`;
     }
     const { rows: [n] } = await db.query(
-      `INSERT INTO obras (codigo,nombre,cliente,direccion,ciudad,provincia,responsable_id,fecha_inicio,fecha_entrega,kg_contratados,kg_previstos_fab,kg_previstos_montaje,presupuesto,estado,observaciones)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`, Object.values(o));
+      `INSERT INTO obras (${COLS.join(',')}) VALUES (${COLS.map((_, i) => `$${i + 1}`).join(',')}) RETURNING *`, COLS.map((c) => o[c]));
     await crearFasesPorDefecto(db, n.id);
-    await audit(db, { entidad: 'obra', entidadId: n.id, obraId: n.id, accion: 'crear', detalle: `Obra ${n.codigo} creada con las 9 fases por defecto`, usuarioId: req.user.id });
+    await guardarEtapas(db, n.id, etapas);
+    await audit(db, { entidad: 'obra', entidadId: n.id, obraId: n.id, accion: 'crear', detalle: `Proyecto ${n.codigo} creado con ${etapas.length} fase(s)`, usuarioId: req.user.id });
     return n;
   });
   res.status(201).json(obra);
@@ -65,15 +90,16 @@ r.put('/:id', requirePerm('obras.editar'), wrap(async (req, res) => {
   if (!cur) throw notFound('No se ha encontrado la obra.');
   const o = leerObra({ ...cur, ...req.body });
   if (!o.codigo) o.codigo = cur.codigo;
-  if (o.fecha_inicio && o.fecha_entrega && o.fecha_entrega < o.fecha_inicio) throw bad('La fecha de entrega no puede ser anterior a la de inicio.');
-  const cambios = Object.keys(o).filter((k) => String(o[k] ?? '') !== String(cur[k] ?? ''));
-  await q(`UPDATE obras SET codigo=$1,nombre=$2,cliente=$3,direccion=$4,ciudad=$5,provincia=$6,responsable_id=$7,fecha_inicio=$8,fecha_entrega=$9,kg_contratados=$10,
-           kg_previstos_fab=$11,kg_previstos_montaje=$12,presupuesto=$13,estado=$14,observaciones=$15,actualizado_en=now() WHERE id=$16`,
-  [...Object.values(o), id]);
-  if (cambios.length) {
-    await audit({ query: q }, { entidad: 'obra', entidadId: id, obraId: id, accion: 'editar', detalle: `Cambios: ${cambios.join(', ')}`,
-      datos: Object.fromEntries(cambios.map((k) => [k, { antes: cur[k], despues: o[k] }])), usuarioId: req.user.id });
-  }
+  const etapas = leerEtapas(req.body.etapas);
+  const cambios = COLS.filter((k) => String(o[k] ?? '') !== String(cur[k] ?? ''));
+  await tx(async (db) => {
+    await db.query(`UPDATE obras SET ${COLS.map((c, i) => `${c}=$${i + 1}`).join(',')}, actualizado_en=now() WHERE id=$${COLS.length + 1}`, [...COLS.map((c) => o[c]), id]);
+    await guardarEtapas(db, id, etapas);
+    if (cambios.length || etapas) {
+      await audit(db, { entidad: 'obra', entidadId: id, obraId: id, accion: 'editar', detalle: `Cambios: ${[...cambios, ...(etapas ? ['fases'] : [])].join(', ')}`,
+        datos: Object.fromEntries(cambios.map((k) => [k, { antes: cur[k], despues: o[k] }])), usuarioId: req.user.id });
+    }
+  });
   res.json(await resumenObra({ query: q }, id));
 }));
 

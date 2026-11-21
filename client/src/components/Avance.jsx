@@ -55,7 +55,7 @@ export function AvanceSheet({ pieza, onClose, onDone, origen = 'web', ambitos = 
       footer={<>
         <button className="btn big" onClick={onClose}>Cancelar</button>
         {modo === 'avanzar'
-          ? <button className="btn big ok" disabled={busy || !puede || disp < 1} onClick={enviar}><CheckCircle2 />Confirmar {cant} ud · {f.t(cant * pieza.peso_unitario_kg)}</button>
+          ? <button className="btn big ok" disabled={busy || !puede || disp < 1} onClick={enviar}><CheckCircle2 />Confirmar {cant} ud · {f.kg(cant * pieza.peso_unitario_kg)}</button>
           : <button className="btn big danger solid" disabled={busy || maxCorr < 1} onClick={enviar}><Undo2 />Quitar {cant} ud</button>}
       </>}>
       <div className="stack">

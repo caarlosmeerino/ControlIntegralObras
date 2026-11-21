@@ -20,6 +20,8 @@ function leer(b) {
     peso_unitario_kg: num(b.peso_unitario_kg, 'peso unitario (kg)', { min: 0, max: 1e6 }),
     cantidad: num(b.cantidad, 'cantidad', { min: 1, max: 100000, int: true, def: 1 }),
     observaciones: str(b.observaciones, 'observaciones', { max: 5000 }),
+    m2_unitario: num(b.m2_unitario, 'superficie por unidad (m²)', { min: 0, max: 1e6, def: 0 }),
+    ml_unitario: num(b.ml_unitario, 'longitud por unidad (ml)', { min: 0, max: 1e6, def: 0 }),
   };
 }
 
@@ -41,8 +43,8 @@ r.post('/', requirePerm('piezas.editar'), wrap(async (req, res) => {
   const obraId = num(req.body.obra_id, 'obra', { int: true });
   const d = leer(req.body);
   const n = await one(
-    `INSERT INTO piezas (obra_id, marca, elemento, perfil, plano, peso_unitario_kg, cantidad, observaciones) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, marca`,
-    [obraId, ...Object.values(d)]);
+    `INSERT INTO piezas (obra_id, marca, elemento, perfil, plano, peso_unitario_kg, cantidad, observaciones, m2_unitario, ml_unitario) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, marca`,
+    [obraId, d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario]);
   await audit({ query: q }, { entidad: 'pieza', entidadId: n.id, obraId, accion: 'crear', detalle: `Pieza ${n.marca}: ${d.cantidad} × ${d.peso_unitario_kg} kg`, usuarioId: req.user.id });
   res.status(201).json(await piezaConEstado({ query: q }, n.id));
 }));
@@ -59,7 +61,7 @@ r.post('/importar', requirePerm('piezas.editar'), wrap(async (req, res) => {
   const errores = []; const datos = [];
   filas.forEach((f, i) => {
     try {
-      datos.push(leer({ marca: f[0], elemento: f[1], perfil: f[2], plano: f[3], peso_unitario_kg: f[4], cantidad: f[5] || 1, observaciones: f[6] }));
+      datos.push(leer({ marca: f[0], elemento: f[1], perfil: f[2], plano: f[3], peso_unitario_kg: f[4], cantidad: f[5] || 1, m2_unitario: f[6], ml_unitario: f[7], observaciones: f[8] }));
     } catch (e) { errores.push(`Fila ${i + 1}: ${e.message}`); }
   });
   if (errores.length) throw bad('Hay filas con errores. No se ha importado nada.', { errores });
@@ -70,12 +72,12 @@ r.post('/importar', requirePerm('piezas.editar'), wrap(async (req, res) => {
       if (ex) {
         const { rows: [m] } = await db.query('SELECT COALESCE(MAX(cantidad),0) c FROM pieza_avance WHERE pieza_id=$1', [ex.id]);
         if (d.cantidad < m.c) throw bad(`La marca ${d.marca} ya tiene ${m.c} unidades con avance; no se puede bajar la cantidad a ${d.cantidad}.`);
-        await db.query('UPDATE piezas SET elemento=$1, perfil=$2, plano=$3, peso_unitario_kg=$4, cantidad=$5, observaciones=$6, actualizado_en=now() WHERE id=$7',
-          [d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, ex.id]);
+        await db.query('UPDATE piezas SET elemento=$1, perfil=$2, plano=$3, peso_unitario_kg=$4, cantidad=$5, observaciones=$6, m2_unitario=$7, ml_unitario=$8, actualizado_en=now() WHERE id=$9',
+          [d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario, ex.id]);
         actualizadas++;
       } else {
-        await db.query('INSERT INTO piezas (obra_id, marca, elemento, perfil, plano, peso_unitario_kg, cantidad, observaciones) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
-          [obraId, d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones]);
+        await db.query('INSERT INTO piezas (obra_id, marca, elemento, perfil, plano, peso_unitario_kg, cantidad, observaciones, m2_unitario, ml_unitario) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
+          [obraId, d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario]);
         creadas++;
       }
     }
@@ -117,9 +119,9 @@ r.put('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
     fecha_montaje: req.body.fecha_montaje !== undefined ? date(req.body.fecha_montaje, 'montaje') : cur.fecha_montaje,
     incidencia: req.body.incidencia !== undefined ? !!req.body.incidencia : cur.incidencia,
   };
-  await q(`UPDATE piezas SET marca=$1, elemento=$2, perfil=$3, plano=$4, peso_unitario_kg=$5, cantidad=$6, observaciones=$7,
-           fecha_fabricacion=$8, fecha_expedicion=$9, fecha_montaje=$10, incidencia=$11, actualizado_en=now() WHERE id=$12`,
-  [...Object.values(d), ...Object.values(extra), id]);
+  await q(`UPDATE piezas SET marca=$1, elemento=$2, perfil=$3, plano=$4, peso_unitario_kg=$5, cantidad=$6, observaciones=$7, m2_unitario=$8, ml_unitario=$9,
+           fecha_fabricacion=$10, fecha_expedicion=$11, fecha_montaje=$12, incidencia=$13, actualizado_en=now() WHERE id=$14`,
+  [d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario, ...Object.values(extra), id]);
   const todo = { ...d, ...extra };
   const cambios = Object.keys(todo).filter((k) => String(todo[k] ?? '') !== String(cur[k] ?? ''));
   if (cambios.length) await audit({ query: q }, { entidad: 'pieza', entidadId: id, obraId: cur.obra_id, accion: 'editar',

@@ -246,19 +246,23 @@ export async function resumenObras(db, obraIds = null) {
     `SELECT o.*, u.nombre AS responsable_nombre FROM obras o LEFT JOIN usuarios u ON u.id=o.responsable_id ${filtro} ORDER BY o.fecha_entrega NULLS LAST, o.codigo`, params);
   if (!obras.length) return [];
   const ids = obras.map((o) => o.id);
-  const [{ rows: fases }, { rows: kg }, { rows: stats }] = await Promise.all([
+  const [{ rows: fases }, { rows: kg }, { rows: stats }, { rows: etapas }] = await Promise.all([
     db.query('SELECT * FROM obra_fases WHERE obra_id = ANY($1) ORDER BY obra_id, orden', [ids]),
     db.query(`SELECT a.obra_fase_id, SUM(a.cantidad * p.peso_unitario_kg) AS kg FROM pieza_avance a JOIN piezas p ON p.id=a.pieza_id
               WHERE p.obra_id = ANY($1) GROUP BY a.obra_fase_id`, [ids]),
-    db.query(`SELECT obra_id, COUNT(*)::int AS n_marcas, SUM(cantidad)::int AS n_unidades, SUM(peso_unitario_kg*cantidad) AS kg_total
+    db.query(`SELECT obra_id, COUNT(*)::int AS n_marcas, SUM(cantidad)::int AS n_unidades, SUM(peso_unitario_kg*cantidad) AS kg_total,
+              SUM(m2_unitario*cantidad) AS m2_total, SUM(ml_unitario*cantidad) AS ml_total
               FROM piezas WHERE obra_id = ANY($1) GROUP BY obra_id`, [ids]),
+    db.query('SELECT * FROM etapas WHERE obra_id = ANY($1) ORDER BY obra_id, orden', [ids]),
   ]);
   const kgMap = new Map(kg.map((k) => [k.obra_fase_id, Number(k.kg)]));
   const st = new Map(stats.map((s) => [s.obra_id, s]));
   const t = hoy();
   return obras.map((o) => {
     const fs = fases.filter((f) => f.obra_id === o.id);
-    return { ...o, resumen: calcularResumen(o, fs, kgMap, st.get(o.id) || {}, t) };
+    const sp = st.get(o.id) || {};
+    return { ...o, etapas: etapas.filter((e) => e.obra_id === o.id), m2_despiece: Number(sp.m2_total || 0), ml_despiece: Number(sp.ml_total || 0),
+      resumen: calcularResumen(o, fs, kgMap, sp, t) };
   });
 }
 

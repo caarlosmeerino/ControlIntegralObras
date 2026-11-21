@@ -85,7 +85,7 @@ export function PhaseList({ fases, compact, onClick, sinEstado }) {
             <div className={`phase-n ${tone}`}>{fs.orden}</div>
             <div>
               <div className="phase-name">{fs.nombre}</div>
-              {!compact && <div className="phase-kg">{f.tNum(fs.kg_completados)} de {f.t(fs.kg_base)} {fs.indicador || ''}</div>}
+              {!compact && <div className="phase-kg">{f.kg(fs.kg_completados)} de {f.kg(fs.kg_base)} {fs.indicador || ''}</div>}
             </div>
             <Bar value={fs.porcentaje} tone={tone === 'idle' ? '' : tone} label={fs.nombre} />
             <div className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
@@ -122,10 +122,10 @@ export function UbicacionBar({ fases, totalKg }) {
   return (
     <div>
       <div className="stackbar" role="img" aria-label="Distribución de toneladas por fase">
-        {tramos.map((x) => <span key={x.nombre} title={`${x.nombre}: ${f.t(x.kg)}`} style={{ width: `${(x.kg / totalKg) * 100}%`, background: x.color }} />)}
+        {tramos.map((x) => <span key={x.nombre} title={`${x.nombre}: ${f.kg(x.kg)}`} style={{ width: `${(x.kg / totalKg) * 100}%`, background: x.color }} />)}
       </div>
       <div className="legend">
-        {tramos.map((x) => <span key={x.nombre}><i className="dot" style={{ background: x.color }} />{x.nombre}: <b className="num">{f.t(x.kg)}</b></span>)}
+        {tramos.map((x) => <span key={x.nombre}><i className="dot" style={{ background: x.color }} />{x.nombre}: <b className="num">{f.kg(x.kg)}</b></span>)}
       </div>
     </div>
   );
@@ -229,7 +229,7 @@ export function DataTable({ columns, rows, onRow, card, footer, empty = 'No hay 
 }
 
 /** Gráfico de barras SVG (apiladas opcionalmente) */
-export function BarChart({ data, series, height = 220, format = (v) => f.tNum(v, 1), xLabel = (d) => f.diaCorto(d.periodo) }) {
+export function BarChart({ data, series, height = 220, format = (v) => f.num(v), xLabel = (d) => f.diaCorto(d.periodo) }) {
   const [hover, setHover] = useState(null);
   if (!data?.length) return <Empty title="Sin producción en el periodo" />;
   const W = 720, H = height, pl = 44, pb = 26, pt = 10;

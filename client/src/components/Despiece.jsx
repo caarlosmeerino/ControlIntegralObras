@@ -41,6 +41,8 @@ export default function Despiece({ modo, piezas, obraId, reload }) {
   const ambitos = fab ? FAB : OBRA;
   const filas = piezas.map((p) => ({ ...p, fab: enFabricacion(p), mon: enMontaje(p) }));
   const total = filas.reduce((s, p) => s + p.peso_total_kg, 0);
+  const m2Total = filas.reduce((s, p) => s + (p.m2_unitario || 0) * p.cantidad, 0);
+  const mlTotal = filas.reduce((s, p) => s + (p.ml_unitario || 0) * p.cantidad, 0);
   const lista = filas.filter((p) => (!q || `${p.marca} ${p.perfil} ${p.plano} ${p.elemento}`.toLowerCase().includes(q.toLowerCase()))
     && (filtro === 'todas' || (filtro === 'pendientes' ? (fab ? !p.fab.terminada : p.mon.montadas < p.cantidad) : (fab ? p.fab.terminada : p.mon.montadas >= p.cantidad))));
   const puede = can(...(fab ? ['avance.taller', 'avance.oficina'] : ['avance.obra']));
@@ -55,6 +57,8 @@ export default function Despiece({ modo, piezas, obraId, reload }) {
     { key: 'plano', label: 'Plano', render: (p) => p.plano || '—' },
     { key: 'cantidad', label: 'Ud', num: true },
     { key: 'peso', label: 'Peso', num: true, render: (p) => f.kg(p.peso_total_kg) },
+    { key: 'm2', label: 'm²', num: true, render: (p) => (p.m2_unitario ? f.num(p.m2_unitario * p.cantidad, 2) : '—') },
+    { key: 'ml', label: 'ml', num: true, render: (p) => (p.ml_unitario ? f.num(p.ml_unitario * p.cantidad, 2) : '—') },
   ];
   const cols = fab ? [...comunes,
     { key: 'fase', label: 'Fase', render: (p) => (p.fab.terminada ? <span className="badge ok">Fabricada</span> : <span className="small">{p.fab.actual.nombre}<div className="xs muted">{p.fab.actual.completadas}/{p.cantidad} ud</div></span>) },
@@ -69,13 +73,13 @@ export default function Despiece({ modo, piezas, obraId, reload }) {
   return (
     <div className="stack">
       <div className="grid g3 kpi-fila">
-        <Kpi label="Peso total" value={f.tNum(total)} unit="t" sub={`${f.plural(piezas.length, 'marca')} · ${f.num(piezas.reduce((s, p) => s + p.cantidad, 0))} unidades`} />
+        <Kpi label="Despiece" value={f.num(total)} unit="kg" sub={`${f.m2(m2Total)} · ${f.ml(mlTotal)} · ${f.plural(piezas.length, 'marca')}`} />
         {fab ? <>
-          <Kpi label="Fabricado" value={f.tNum(kgFab)} unit="t" tone="ok" sub={total ? `${f.pct((kgFab / total) * 100)} ` : ''} />
-          <Kpi label="Pendiente" value={f.tNum(total - kgFab)} unit="t" />
+          <Kpi label="Fabricado" value={f.num(kgFab)} unit="kg" tone="ok" sub={total ? `${f.pct((kgFab / total) * 100)} del despiece` : ''} />
+          <Kpi label="Pendiente" value={f.num(total - kgFab)} unit="kg" />
         </> : <>
-          <Kpi label="Montado" value={f.tNum(kgMont)} unit="t" tone="ok" sub={total ? `${f.pct((kgMont / total) * 100)} del despiece` : ''} />
-          <Kpi label="En obra" value={f.tNum(kgEnObra)} unit="t" sub={`Aún en taller: ${f.t(total - kgMont - kgEnObra)}`} />
+          <Kpi label="Montado" value={f.num(kgMont)} unit="kg" tone="ok" sub={total ? `${f.pct((kgMont / total) * 100)} del despiece` : ''} />
+          <Kpi label="En obra" value={f.num(kgEnObra)} unit="kg" sub={`Aún en taller: ${f.kg(total - kgMont - kgEnObra)}`} />
         </>}
       </div>
       <div className="row wrap">
@@ -94,7 +98,7 @@ export default function Despiece({ modo, piezas, obraId, reload }) {
               <div className="row">
                 <div className="grow">
                   <span className="marca">{p.marca}</span> <span className="small muted">{f.ELEMENTOS[p.elemento]} {p.perfil}</span>
-                  <div className="small muted">{p.cantidad} ud · {f.kg(p.peso_total_kg)}{p.plano ? ` · plano ${p.plano}` : ''}</div>
+                  <div className="small muted">{p.cantidad} ud · {f.kg(p.peso_total_kg)}{p.m2_unitario ? ` · ${f.m2(p.m2_unitario * p.cantidad)}` : ''}{p.ml_unitario ? ` · ${f.ml(p.ml_unitario * p.cantidad)}` : ''}{p.plano ? ` · plano ${p.plano}` : ''}</div>
                 </div>
                 {fab ? (p.fab.terminada ? <span className="badge ok">Fabricada</span> : <span className="small strong">{f.num(p.fab.pct)} %</span>)
                   : <span className={`badge ${p.mon.estado[0]}`}>{p.mon.estado[1]} {p.mon.montadas}/{p.cantidad}</span>}
