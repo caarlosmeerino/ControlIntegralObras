@@ -4,7 +4,7 @@ import { ChevronLeft, Pencil, MapPin, Navigation, CalendarDays } from 'lucide-re
 import { useApp, useData } from '../lib/app.jsx';
 import { Loading, ErrorBox, Tabs, Ring, Status, PhaseList, UbicacionBar } from '../components/ui.jsx';
 import Despiece from '../components/Despiece.jsx';
-import { ArchivosObra } from '../components/Archivos.jsx';
+import Enlaces from '../components/Enlaces.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import { avanceGrupo, urlCliente } from '../lib/obra.js';
 import * as f from '../lib/format.js';
@@ -125,8 +125,8 @@ export default function ObraDetalle() {
         </div>
       )}
       {(tab === 'fabricacion' || tab === 'montaje') && (piezas.loading && !piezas.data ? <Loading /> : <Despiece key={tab} modo={tab} piezas={piezas.data || []} obraId={o.id} reload={recargar} />)}
-      {tab === 'planos' && <ArchivosObra obraId={o.id} solo={['plano']} />}
-      {tab === 'docs' && <ArchivosObra obraId={o.id} solo={['documento', 'foto']} />}
+      {tab === 'planos' && <Enlaces obraId={o.id} tipo="plano" />}
+      {tab === 'docs' && <Enlaces obraId={o.id} tipo="documento" />}
       {edit && <ObraForm obra={o} onClose={() => setEdit(false)} onSaved={reload} />}
     </>
   );
