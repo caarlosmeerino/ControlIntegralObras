@@ -160,20 +160,20 @@ export default function Layout() {
       <header className="cabecera no-print">
         <div className="cab-fila">
           <NavLink to="/" className="marca-app" aria-label="Inicio">
-            <span className="logo"><Ic.PerfilH size={26} /></span>
-            <span className="marca-txt">CONTROL<b>INTEGRAL</b><small>Estructuras metálicas</small></span>
+            <span className="app-icon"><Ic.PerfilH size={18} /></span>
+            <span className="marca-txt">Control Integral</span>
           </NavLink>
           <nav className="zonas hide-m" aria-label="Zonas">
             {zonas.filter((z) => z.id !== 'admin').map((z) => (
               <NavLink key={z.id} to={z.items[0].to} end={z.items[0].end} className={`zona ${actual === z.id ? 'on' : ''}`}>
-                <z.icon size={20} />{z.label}
+                {z.label}
               </NavLink>
             ))}
           </nav>
           <div className="grow hide-m" />
           <div className="hide-m cab-buscar"><GlobalSearch /></div>
           <button className="btn icon cab-btn hide-d" onClick={() => setBuscar(true)} aria-label="Buscar"><Ic.Lupa /></button>
-          <button className="btn escanear hide-m" onClick={() => nav('/escanear')}><Ic.Escaner size={22} />Escanear</button>
+          <button className="btn primary sm hide-m" onClick={() => nav('/escanear')}><Ic.Escaner size={18} />Escanear</button>
           <button className="btn icon cab-btn hide-m" onClick={() => setTema(oscuro ? 'light' : 'dark')} aria-label={oscuro ? 'Modo claro' : 'Modo oscuro'} title={oscuro ? 'Modo claro' : 'Modo oscuro'}>{oscuro ? <Ic.Sol /> : <Ic.Luna />}</button>
           <div className="usuario hide-m">
             <button className="btn cab-btn avatar" onClick={() => setMenuUser(!menuUser)} aria-expanded={menuUser} aria-label="Mi cuenta">{user.nombre.split(' ').map((x) => x[0]).slice(0, 2).join('')}</button>
@@ -188,10 +188,10 @@ export default function Layout() {
         </div>
         {zona && zona.id !== 'admin' && zona.items.length > 1 && (
           <nav className="subzona" aria-label={`Apartados de ${zona.label}`}>
-            {zona.items.map((i) => <NavLink key={i.to} to={i.to} end={i.end} className="sub"><i.icon size={18} />{i.label}</NavLink>)}
+            <span className="sub-titulo hide-m">{zona.label}</span>
+            <div className="sub-links">{zona.items.map((i) => <NavLink key={i.to} to={i.to} end={i.end} className="sub">{i.label}</NavLink>)}</div>
           </nav>
         )}
-        <div className="franja" aria-hidden="true" />
       </header>
       {buscar && (
         <div className="overlay buscar-movil" onMouseDown={(e) => e.target === e.currentTarget && setBuscar(false)}>
@@ -201,7 +201,7 @@ export default function Layout() {
       <main className="content"><Outlet /></main>
       <nav className="bottom-nav no-print" aria-label="Navegación rápida">
         {izquierda.map((z) => <button key={z.id} className={actual === z.id ? 'active' : ''} onClick={() => abrirZona(z)}><z.icon size={26} />{z.label}</button>)}
-        <NavLink to="/escanear" className="center"><span className="ico"><Ic.Escaner size={30} /></span><em>Escanear</em></NavLink>
+        <NavLink to="/escanear" className="center"><Ic.Escaner size={26} />Escanear</NavLink>
         {derecha.map((z) => <button key={z.id} className={actual === z.id ? 'active' : ''} onClick={() => abrirZona(z)}><z.icon size={26} />{z.label}</button>)}
         <button className={!['produccion', 'taller', 'obra'].includes(actual) ? 'active' : ''} onClick={() => setHoja('todas')}><Ic.Zonas size={26} />Más</button>
       </nav>

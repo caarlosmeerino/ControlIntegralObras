@@ -49,8 +49,8 @@ export default function Informes() {
       <div className="page-head"><div><h1>Informes</h1><p>Consulta en pantalla y exporta a PDF o Excel.</p></div></div>
       <div className="grid g4 mb" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
         {cat.data.map((c) => (
-          <button key={c.clave} className="big-action" onClick={() => setTipo(c.clave)} style={{ minHeight: 76, fontSize: '1.05rem', outline: tipo === c.clave ? '3px solid var(--acento)' : undefined, outlineOffset: -3 }}>
-            <span className="ico" style={{ width: 40, height: 40, background: tipo === c.clave ? 'var(--acento)' : '#30353a', color: tipo === c.clave ? '#191b1d' : '#c9c7c0' }}><FileText size={20} /></span>
+          <button key={c.clave} className="big-action" onClick={() => setTipo(c.clave)} style={{ minHeight: 72, boxShadow: tipo === c.clave ? '0 0 0 2px var(--accent)' : undefined }}>
+            <span className="ico" style={{ width: 40, height: 40, background: tipo === c.clave ? 'var(--accent)' : '#8e8e93', color: '#fff' }}><FileText size={20} /></span>
             <span className="small">{c.nombre}</span>
           </button>
         ))}

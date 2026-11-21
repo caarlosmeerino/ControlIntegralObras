@@ -39,7 +39,7 @@ export default function Rendimientos() {
       <div className="grid g3 mb">
         <div className="card span2">
           <h2 className="mb">Toneladas procesadas por {agrupar === 'dia' ? 'día' : agrupar}</h2>
-          <BarChart data={data.serie} series={[{ key: 'kg', label: 'Procesado por el personal', color: 'var(--text)' }]} xLabel={etiqueta} />
+          <BarChart data={data.serie} series={[{ key: 'kg', label: 'Procesado por el personal', color: '#0a84ff' }]} xLabel={etiqueta} />
         </div>
         <div className="card">
           <h2 className="mb">Por sección</h2>

@@ -75,7 +75,7 @@ export default function ObraDetalle() {
       <Link to="/obras" className="btn ghost sm mb"><ArrowLeft size={18} />Obras</Link>
       <div className="card mb">
         <div className="row wrap" style={{ alignItems: 'flex-start', gap: 20 }}>
-          <Ring value={r.avance_global} size={108} stroke={11} label="avance" tone={r.retrasada ? 'bad' : undefined} />
+          <Ring value={r.avance_global} size={96} label="avance" tone={r.retrasada ? 'bad' : undefined} />
           <div className="grow" style={{ minWidth: 240 }}>
             <div className="row wrap" style={{ gap: 8 }}><span className="code">{o.codigo}</span><Status estado={o.estado} map={f.ESTADOS_OBRA} small />{r.retrasada && <Status estado="retrasado" small />}</div>
             <h1 className="mt-s">{o.nombre}</h1>
@@ -92,9 +92,9 @@ export default function ObraDetalle() {
         <div className="divider" />
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 10 }}>
           {INDICADORES.map(([k, l]) => (
-            <div key={k} style={{ padding: '8px 12px', background: 'var(--surface-2)', borderLeft: '4px solid var(--text)' }}>
-              <div className="xs muted strong" style={{ textTransform: 'uppercase', letterSpacing: '.04em' }}>{l}</div>
-              <div className="strong num mono" style={{ fontSize: '1.1rem' }}>{r.toneladas[k] == null ? '—' : f.t(r.toneladas[k])}</div>
+            <div key={k} style={{ padding: '10px 14px', background: 'var(--surface-2)', borderRadius: 12 }}>
+              <div className="xs muted">{l}</div>
+              <div className="strong num" style={{ fontSize: '1.12rem' }}>{r.toneladas[k] == null ? '—' : f.t(r.toneladas[k])}</div>
             </div>
           ))}
         </div>

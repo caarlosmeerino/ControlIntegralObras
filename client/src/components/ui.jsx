@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, CheckCircle2, Clock, AlertOctagon, Circle, Inbox, AlertTriangle, RefreshCw, Minus, Plus } from 'lucide-react';
 import * as f from '../lib/format.js';
-import { ICONO_FASE, PerfilH } from './iconos.jsx';
 
 export const Loading = () => <div className="spinner" role="status" aria-label="Cargando" />;
 
@@ -44,24 +43,20 @@ export function Bar({ value, tone, thick, label }) {
   );
 }
 
-/** Manómetro semicircular con escala graduada (sustituye al anillo) */
-export function Ring({ value, size = 96, stroke = 10, label, tone }) {
+/** Anillo de progreso (estilo anillos de Actividad) */
+export function Ring({ value, size = 96, stroke, label, tone }) {
   const v = Math.max(0, Math.min(100, Number(value) || 0));
-  const W = size, H = Math.round(size * 0.66), r = (size - stroke) / 2 - 2, cx = W / 2, cy = r + stroke / 2 + 2;
-  const pt = (pct, rr) => { const a = Math.PI * (1 - pct / 100); return [cx + rr * Math.cos(a), cy - rr * Math.sin(a)]; };
-  const arc = (from, to) => { const [x1, y1] = pt(from, r); const [x2, y2] = pt(to, r); return `M${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2}`; };
-  const color = tone ? `var(--${tone})` : v >= 100 ? 'var(--ok)' : 'var(--acento)';
-  const [nx, ny] = pt(v, r - stroke * 0.9);
+  const sw = stroke || Math.max(6, Math.round(size / 9));
+  const r = (size - sw) / 2; const c = 2 * Math.PI * r;
+  const color = tone ? `var(--${tone})` : v >= 100 ? 'var(--ok)' : 'var(--accent)';
   return (
-    <div className="gauge" style={{ width: W }} role="img" aria-label={`${label || 'Avance'}: ${f.pct(v)}`}>
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-        <path d={arc(0, 100)} stroke="var(--surface-3)" strokeWidth={stroke} fill="none" />
-        {v > 0 && <path d={arc(0, Math.max(v, 0.5))} stroke={color} strokeWidth={stroke} fill="none" />}
-        {Array.from({ length: 11 }, (_, i) => { const [x1, y1] = pt(i * 10, r + stroke / 2 + 1); const [x2, y2] = pt(i * 10, r + stroke / 2 - (i % 5 ? 3 : 6)); return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--surface)" strokeWidth={i % 5 ? 1.5 : 2.5} />; })}
-        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--text)" strokeWidth={Math.max(2, size / 40)} strokeLinecap="round" />
-        <circle cx={cx} cy={cy} r={Math.max(3, size / 22)} fill="var(--text)" />
+    <div className="ring" style={{ width: size, height: size }} role="img" aria-label={`${label || 'Avance'}: ${f.pct(v)}`}>
+      <svg width={size} height={size}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeOpacity=".16" strokeWidth={sw} />
+        {v > 0 && <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - v / 100)} style={{ transition: 'stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)' }} />}
       </svg>
-      <div className="gauge-label"><b style={{ fontSize: Math.max(15, size / 4.4) }}>{f.num(v, v < 10 && v > 0 ? 1 : 0)}<i>%</i></b>{label && <small>{label}</small>}</div>
+      <div className="ring-label"><b style={{ fontSize: Math.max(13, size / 4.6) }}>{f.num(v, v < 10 && v > 0 ? 1 : 0)}<i>%</i></b>{label && size >= 80 && <small>{label}</small>}</div>
     </div>
   );
 }
@@ -104,21 +99,16 @@ export function PhaseList({ fases, compact, onClick }) {
   );
 }
 
-/** Línea de producción: las fases como estaciones de una cadena */
+/** Línea de producción: 9 segmentos finos, uno por fase */
 export function LineaProduccion({ fases, compact }) {
   return (
-    <ol className={`linea ${compact ? 'compact' : ''}`} aria-label="Avance por fases">
-      {fases.map((x) => {
-        const tone = toneOf(x.estado);
-        const I = ICONO_FASE[x.clave] || PerfilH;
-        return (
-          <li key={x.id} className={`estacion ${tone}`} title={`${x.orden}. ${x.nombre}: ${f.pct(x.porcentaje)}`}>
-            <span className="est-caja"><span className="est-fill" style={{ height: `${Math.min(100, x.porcentaje)}%` }} /><I size={compact ? 16 : 20} /></span>
-            {!compact && <span className="est-nombre">{x.nombre.split(' ')[0]}</span>}
-            <span className="est-pct">{f.num(x.porcentaje)}%</span>
-          </li>
-        );
-      })}
+    <ol className={`linea ${compact ? 'compact' : ''}`} aria-label="Avance por fases" style={{ '--n': fases.length }}>
+      {fases.map((x) => (
+        <li key={x.id} className={`estacion ${toneOf(x.estado)}`} title={`${x.orden}. ${x.nombre}: ${f.pct(x.porcentaje)}`}>
+          <span className="est-barra"><span style={{ width: `${Math.min(100, x.porcentaje)}%` }} /></span>
+          {!compact && <><span className="est-nombre">{x.nombre.split(' ')[0]}</span><span className="est-pct">{f.num(x.porcentaje)}%</span></>}
+        </li>
+      ))}
     </ol>
   );
 }
@@ -151,6 +141,7 @@ export function Sheet({ title, onClose, children, footer, wide }) {
   return (
     <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
       <div className={`sheet ${wide ? 'wide' : ''}`} role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined}>
+        <div className="grabber" aria-hidden="true" />
         <div className="sheet-head">
           <h2 className="grow">{title}</h2>
           <button className="btn ghost icon" onClick={onClose} aria-label="Cerrar"><X /></button>
@@ -260,7 +251,7 @@ export function BarChart({ data, series, height = 220, format = (v) => f.tNum(v,
               {series.map((s) => {
                 const v = Number(d[s.key]) || 0; if (!v) return null;
                 const y0 = y(acc), y1 = y(acc + v); acc += v;
-                return <rect key={s.key} x={pl + i * bw + bw * 0.18} width={bw * 0.64} y={y1} height={Math.max(1, y0 - y1)} fill={s.color} rx={2} />;
+                return <rect key={s.key} x={pl + i * bw + bw * 0.18} width={bw * 0.64} y={y1} height={Math.max(1, y0 - y1)} fill={s.color} rx={3} />;
               })}
               {i % step === 0 && <text x={pl + i * bw + bw / 2} y={H - 8} textAnchor="middle">{xLabel(d)}</text>}
             </g>
@@ -279,8 +270,8 @@ export function BarChart({ data, series, height = 220, format = (v) => f.tNum(v,
 }
 
 export const SERIES_FASES = [
-  { key: 'corte', label: 'Cortado', color: '#8e9aa6' },
-  { key: 'armado', label: 'Armado y soldado', color: 'var(--text)' },
-  { key: 'pintura', label: 'Pintado', color: '#e8a400' },
-  { key: 'montaje', label: 'Montado', color: 'var(--ok)' },
+  { key: 'corte', label: 'Cortado', color: '#64d2ff' },
+  { key: 'armado', label: 'Armado y soldado', color: '#0a84ff' },
+  { key: 'pintura', label: 'Pintado', color: '#ff9f0a' },
+  { key: 'montaje', label: 'Montado', color: '#30d158' },
 ];

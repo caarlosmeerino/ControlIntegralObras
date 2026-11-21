@@ -16,7 +16,7 @@ export function ObraCard({ o }) {
           <h3 className="mt-s">{o.nombre}</h3>
           <div className="small muted">{o.cliente} · entrega {f.fecha(o.fecha_entrega)}</div>
         </div>
-        <Ring value={r.avance_global} size={104} stroke={11} label="global" tone={r.retrasada ? 'bad' : undefined} />
+        <Ring value={r.avance_global} size={76} label="global" tone={r.retrasada ? 'bad' : undefined} />
       </div>
       <div className="grid g3" style={{ gap: 8, gridTemplateColumns: 'repeat(3,1fr)' }}>
         <div><div className="xs muted">Únicas</div><div className="strong num">{f.t(r.kg_unicos, 1)}</div></div>
@@ -73,7 +73,7 @@ export default function Panel() {
         <div className="card">
           <h2>Hoy</h2>
           <div className="stack mt" style={{ gap: 12 }}>
-            {[['Cortado', k.hoy_cortados, '#8e9aa6'], ['Armado y soldado', k.hoy_armados, 'var(--text)'], ['Pintado', k.hoy_pintados, '#e8a400'], ['Montado', k.hoy_montados, 'var(--ok)']].map(([l, v, c]) => (
+            {[['Cortado', k.hoy_cortados, '#64d2ff'], ['Armado y soldado', k.hoy_armados, '#0a84ff'], ['Pintado', k.hoy_pintados, '#ff9f0a'], ['Montado', k.hoy_montados, '#30d158']].map(([l, v, c]) => (
               <div key={l} className="row between"><span className="row" style={{ gap: 8 }}><i className="dot" style={{ background: c }} />{l}</span><b className="num">{f.t(v)}</b></div>
             ))}
           </div>

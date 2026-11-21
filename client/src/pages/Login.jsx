@@ -17,8 +17,8 @@ export default function Login() {
     <div className="login">
       <form className="card stack" onSubmit={enviar}>
         <div className="row" style={{ gap: 14 }}>
-          <span style={{ width: 60, height: 60, display: 'grid', placeItems: 'center', background: 'var(--acento)', color: '#191b1d', flex: 'none' }}><PerfilH size={34} /></span>
-          <div><h1 style={{ fontSize: '1.9rem', lineHeight: 1 }}>Control <span style={{ color: 'var(--link)' }}>Integral</span></h1><div className="muted small">Fabricación y montaje de estructuras metálicas</div></div>
+          <span className="app-icon" style={{ width: 64, height: 64 }}><PerfilH size={34} /></span>
+          <div><h1 style={{ fontSize: '1.75rem' }}>Control Integral</h1><div className="muted small">Fabricación y montaje de estructuras metálicas</div></div>
         </div>
         {error && <div className="banner bad" role="alert">{error}</div>}
         <div className="field"><label htmlFor="u">Usuario</label>

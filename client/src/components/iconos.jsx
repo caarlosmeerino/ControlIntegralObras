@@ -1,8 +1,8 @@
 // Iconos propios del sector de la estructura metálica.
 // Trazo recto, remates cuadrados, inspirados en perfiles, planos y señalética de taller.
 const I = ({ size = 24, children, title, ...p }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
-    strokeLinecap="square" strokeLinejoin="miter" aria-hidden={title ? undefined : true} role={title ? 'img' : undefined} {...p}>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden={title ? undefined : true} role={title ? 'img' : undefined} {...p}>
     {title && <title>{title}</title>}
     {children}
   </svg>
