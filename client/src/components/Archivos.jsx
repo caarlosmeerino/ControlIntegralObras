@@ -78,7 +78,7 @@ export function Galeria({ archivos, onDelete }) {
   );
 }
 
-export function ArchivosObra({ obraId }) {
+export function ArchivosObra({ obraId, solo = ['plano', 'documento', 'foto'] }) {
   const { data, loading, reload } = useData(`/archivos${qs({ obra_id: obraId })}`);
   if (loading && !data) return <Loading />;
   const planos = data.filter((a) => a.tipo === 'plano');
@@ -86,18 +86,18 @@ export function ArchivosObra({ obraId }) {
   const fotos = data.filter((a) => a.tipo === 'foto');
   return (
     <div className="stack">
-      <div className="card">
+      {solo.includes('plano') && <div className="card">
         <div className="card-head"><div><h2>Planos</h2><p>Planos de proyecto y de taller</p></div><Subir entidad="obra" entidadId={obraId} tipo="plano" camera={false} label="Subir planos" onDone={reload} /></div>
         <Galeria archivos={planos} onDelete={reload} />
-      </div>
-      <div className="card">
+      </div>}
+      {solo.includes('documento') && <div className="card">
         <div className="card-head"><div><h2>Documentación</h2><p>Certificados, albaranes, calidad, contratos…</p></div><Subir entidad="obra" entidadId={obraId} tipo="documento" camera={false} label="Subir documentos" onDone={reload} /></div>
         <Galeria archivos={docs} onDelete={reload} />
-      </div>
-      <div className="card">
+      </div>}
+      {solo.includes('foto') && <div className="card">
         <div className="card-head"><div><h2>Fotografías</h2><p>De la obra, de piezas y de partes de montaje</p></div><Subir entidad="obra" entidadId={obraId} onDone={reload} /></div>
         <Galeria archivos={fotos} onDelete={reload} />
-      </div>
+      </div>}
     </div>
   );
 }

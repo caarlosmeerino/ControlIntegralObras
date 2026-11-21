@@ -67,6 +67,7 @@ async function main() {
       }
     }
     await db.query(`UPDATE obra_fases SET fecha_inicio_prevista=$2, fecha_fin_prevista=$3 WHERE obra_id=$1`, [ob.id, fecha(40), enDias(30)]);
+    await db.query(`UPDATE obras SET ciudad = trim(split_part(direccion, ',', array_length(string_to_array(direccion, ','), 1))) WHERE ciudad = ''`);
     console.log('· Obra de prueba OB-PRUEBA creada (5 marcas, 18 unidades, 20.520 kg)');
     if (soloPrueba) return;
 
@@ -184,6 +185,7 @@ async function main() {
       }
       await db.query('INSERT INTO parte_montaje_medios VALUES ($1,$2,6),($1,$3,8)', [pm.id, M['Grúa autopropulsada 50 t'], M['Plataforma elevadora 16 m']]);
     }
+    await db.query(`UPDATE obras SET ciudad = trim(split_part(direccion, ',', array_length(string_to_array(direccion, ','), 1))) WHERE ciudad = ''`);
     console.log('· Datos de demostración: 3 obras, 13 trabajadores, 6 equipos, 4 medios, partes de horas y de montaje');
     console.log(`· Usuarios de ejemplo (contraseña ${PASS}): director, taller, montaje, operario, oficina`);
   });

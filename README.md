@@ -9,6 +9,17 @@ Aplicación web para gestionar la **fabricación y el montaje de estructuras met
 | **Archivos** | Volumen de Railway o bucket compatible S3, separados de la aplicación |
 | **Seguridad** | Contraseñas con bcrypt, sesión en cookie `httpOnly`, permisos comprobados en el servidor en cada ruta |
 
+## Uso (versión simplificada)
+
+1. **Inicio**: botón «Nuevo proyecto», buscador (cliente, ciudad, nombre o código) y lista de **clientes**.
+2. **Cliente**: sus proyectos con el avance de fabricación y de montaje.
+3. **Proyecto**: pestañas *Resumen · Fabricación · Montaje · Planos · Documentos*.
+   - *Fabricación*: despiece con el avance de taller (fases de oficina y taller) y botón «Avanzar».
+   - *Montaje*: el mismo despiece visto desde obra (en obra, montadas) y botón «Avanzar».
+
+El escaneo QR y los apartados de personal, informes y partes se han retirado de la interfaz para simplificarla
+(la API y la base de datos los conservan por si se recuperan más adelante).
+
 ## Documentación por etapas
 
 Cada documento trae la estructura de la base de datos, las pantallas, los flujos de uso, el despliegue en Railway y los datos de ejemplo con los resultados que deben salir:

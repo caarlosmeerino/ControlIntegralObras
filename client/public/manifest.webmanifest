@@ -16,7 +16,6 @@
     { "src": "/icono.svg", "sizes": "any", "type": "image/svg+xml" }
   ],
   "shortcuts": [
-    { "name": "Escanear pieza", "url": "/escanear" },
-    { "name": "Parte de montaje", "url": "/control-obra" }
+    { "name": "Proyectos", "url": "/" }
   ]
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Pencil, CheckCircle2, Circle, Clock, Printer, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Pencil, CheckCircle2, Circle, Clock, AlertTriangle } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { Loading, ErrorBox, Status, Ring, Empty } from '../components/ui.jsx';
 import { AvanceSheet, BotonAvance } from '../components/Avance.jsx';
@@ -16,17 +16,16 @@ export default function Pieza() {
   const [edit, setEdit] = useState(false);
   if (loading && !p) return <Loading />;
   if (error) return <ErrorBox error={error} retry={reload} />;
-  const origen = new URLSearchParams(location.search).get('origen') === 'qr' ? 'qr' : 'web';
   return (
     <>
-      <Link to={`/obras/${p.obra_id}`} className="btn ghost sm mb"><ArrowLeft size={18} />{p.obra_codigo}</Link>
-      <div className="grid g3 mb">
-        <div className="card span2">
+      <Link to={`/obras/${p.obra_id}`} className="volver"><ChevronLeft size={20} />{p.obra_nombre}</Link>
+      <div className="mb">
+        <div className="card">
           <div className="row wrap" style={{ alignItems: 'flex-start', gap: 18 }}>
             <Ring value={p.progreso} size={96} stroke={10} label="pieza" tone={p.estado === 'retrasado' ? 'bad' : undefined} />
             <div className="grow" style={{ minWidth: 200 }}>
               <div className="row wrap" style={{ gap: 8 }}><span className="code">{p.obra_codigo}</span><Status estado={p.estado} small />{p.incidencia && <span className="badge bad"><AlertTriangle size={14} />Incidencia</span>}</div>
-              <h1 className="mt-s" style={{ fontSize: '2rem' }}><span className="marca" style={{ fontSize: 'inherit' }}>{p.marca}</span></h1>
+              <h1 className="mt-s"><span className="marca" style={{ fontSize: 'inherit' }}>{p.marca}</span></h1>
               <div className="muted">{f.ELEMENTOS[p.elemento]} {p.perfil} · plano {p.plano || '—'} · {p.obra_nombre}</div>
             </div>
             {can('piezas.editar') && <button className="btn" onClick={() => setEdit(true)}><Pencil size={18} />Editar</button>}
@@ -37,11 +36,6 @@ export default function Pieza() {
             <div><div className="xs muted">Peso total</div><div className="strong num" style={{ fontSize: '1.3rem' }}>{f.kg(p.peso_total_kg)}</div></div>
           </div>
           {can('avance.taller', 'avance.obra', 'avance.oficina') && <div className="mt"><BotonAvance pieza={p} onClick={() => setAvance(true)} block /></div>}
-        </div>
-        <div className="card center">
-          <div className="label mb">Código QR de la pieza</div>
-          <div className="qr-box" style={{ margin: '0 auto' }}><img src={`/api/piezas/${p.id}/qr.svg`} alt={`QR de ${p.marca}`} width="160" height="160" /></div>
-          <Link className="btn mt" to={`/obras/${p.obra_id}/etiquetas?ids=${p.id}`}><Printer size={18} />Imprimir etiqueta</Link>
         </div>
       </div>
       <div className="grid g2 mb">
@@ -73,7 +67,7 @@ export default function Pieza() {
             <ul className="timeline">
               {[...p.movimientos.map((m) => ({ k: `m${m.id}`, fecha: m.fecha, color: m.cantidad < 0 ? 'var(--bad)' : 'var(--ok)',
                 t: <>{m.cantidad < 0 ? 'Corrección' : 'Completa'} <b>{m.fase}</b> · {Math.abs(m.cantidad)} ud · {f.kg(Math.abs(m.kg))}</>,
-                s: `${m.usuario || 'Sistema'}${m.trabajador ? ` · realizado por ${m.trabajador}` : ''}${m.nota ? ` · «${m.nota}»` : ''} · ${m.origen === 'qr' ? 'desde QR' : m.origen}` })),
+                s: `${m.usuario || 'Sistema'}${m.trabajador ? ` · realizado por ${m.trabajador}` : ''}${m.nota ? ` · «${m.nota}»` : ''} · ${m.origen}` })),
               ...p.historial.map((h) => ({ k: `h${h.id}`, fecha: h.fecha, color: 'var(--primary)', t: h.detalle, s: h.usuario || 'Sistema' }))]
                 .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
                 .map((x) => <li key={x.k}><span className="dot" style={{ background: x.color }} /><div><div className="small">{x.t}</div><div className="xs muted">{f.fechaHora(x.fecha)} · {x.s}</div></div></li>)}
@@ -85,7 +79,7 @@ export default function Pieza() {
         <div className="card-head"><h2>Fotografías y documentos</h2><Subir entidad="pieza" entidadId={p.id} onDone={reload} /></div>
         <Galeria archivos={p.archivos} onDelete={reload} />
       </div>
-      {avance && <AvanceSheet pieza={p} origen={origen} onClose={() => setAvance(false)} onDone={reload} />}
+      {avance && <AvanceSheet pieza={p} onClose={() => setAvance(false)} onDone={reload} />}
       {edit && <PiezaForm obraId={p.obra_id} pieza={p} onClose={() => setEdit(false)} onSaved={(n) => (n ? reload() : history.back())} />}
     </>
   );

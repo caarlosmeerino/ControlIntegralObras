@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, Undo2, ArrowRight } from 'lucide-react';
 import { Sheet, Stepper, Field, Seg } from './ui.jsx';
 import { useApp } from '../lib/app.jsx';
@@ -14,11 +14,11 @@ async function trabajadores() {
 }
 
 /** Hoja para registrar el avance de una pieza: por defecto completa todas las unidades disponibles de su fase actual. */
-export function AvanceSheet({ pieza, onClose, onDone, origen = 'web' }) {
+export function AvanceSheet({ pieza, onClose, onDone, origen = 'web', ambitos = null }) {
   const { user, can, toast, toastError } = useApp();
   const [modo, setModo] = useState('avanzar');
   // Fases con unidades esperando (puede haber varias si la marca avanza por partes)
-  const abiertas = pieza.avance.filter((a) => a.disponibles > 0);
+  const abiertas = pieza.avance.filter((a) => a.disponibles > 0 && (!ambitos || ambitos.includes(a.ambito)));
   const [faseSel, setFaseSel] = useState(() => (abiertas.find((a) => can(PERM[a.ambito])) || abiertas[0])?.fase_id);
   const fase = abiertas.find((a) => a.fase_id === faseSel);
   const disp = fase?.disponibles || 0;
@@ -105,60 +105,14 @@ export function AvanceSheet({ pieza, onClose, onDone, origen = 'web' }) {
 }
 
 /** Botón grande de avance para tarjetas y fichas */
-export function BotonAvance({ pieza, onClick, block }) {
-  if (!pieza.fase_actual_id) return <span className="badge ok"><CheckCircle2 size={15} />Completada</span>;
-  const abiertas = pieza.avance.filter((a) => a.disponibles > 0);
+export function BotonAvance({ pieza, onClick, block, ambitos = null }) {
+  const abiertas = pieza.avance.filter((a) => a.disponibles > 0 && (!ambitos || ambitos.includes(a.ambito)));
+  const quedan = pieza.avance.some((a) => (!ambitos || ambitos.includes(a.ambito)) && a.completadas < pieza.cantidad);
+  if (!quedan) return <span className="badge ok"><CheckCircle2 size={15} />Completada</span>;
+  if (!abiertas.length) return <span className="badge">Pendiente</span>;
   return (
-    <button className={`btn primary ${block ? 'block big' : ''}`} onClick={(e) => { e.stopPropagation(); onClick(pieza); }} disabled={!abiertas.length}>
+    <button className={`btn primary ${block ? 'block big' : 'sm'}`} onClick={(e) => { e.stopPropagation(); onClick(pieza); }}>
       <ArrowRight size={20} />{block ? (abiertas.length > 1 ? 'Registrar avance' : `Completar ${abiertas[0]?.nombre || pieza.fase_actual_nombre}`) : 'Avanzar'}
     </button>
-  );
-}
-
-/** Lector de QR con la cámara (BarcodeDetector si existe; si no, jsQR) */
-export function QrScanner({ onCode }) {
-  const video = useRef(); const canvas = useRef();
-  const [error, setError] = useState(null);
-  useEffect(() => {
-    let stream, raf, stop = false, detector;
-    (async () => {
-      try {
-        if ('BarcodeDetector' in window) detector = new window.BarcodeDetector({ formats: ['qr_code'] });
-      } catch { detector = null; }
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false });
-        video.current.srcObject = stream;
-        await video.current.play();
-        const tick = async () => {
-          if (stop) return;
-          const v = video.current;
-          if (v.readyState === v.HAVE_ENOUGH_DATA) {
-            let code = null;
-            if (detector) { try { const r = await detector.detect(v); code = r[0]?.rawValue; } catch { detector = null; } }
-            else {
-              const jsQR = (await import('jsqr')).default;
-              const c = canvas.current; const w = 480; const h = Math.round((v.videoHeight / v.videoWidth) * w) || 360;
-              c.width = w; c.height = h; const ctx = c.getContext('2d', { willReadFrequently: true });
-              ctx.drawImage(v, 0, 0, w, h);
-              code = jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'dontInvert' })?.data;
-            }
-            if (code) { if (navigator.vibrate) navigator.vibrate(80); stop = true; onCode(code); return; }
-          }
-          raf = setTimeout(tick, 160);
-        };
-        tick();
-      } catch (e) {
-        setError(e.name === 'NotAllowedError' ? 'Necesitamos permiso para usar la cámara. Actívalo en los ajustes del navegador.' : 'No se ha podido abrir la cámara de este dispositivo.');
-      }
-    })();
-    return () => { stop = true; clearTimeout(raf); stream?.getTracks().forEach((t) => t.stop()); };
-  }, [onCode]);
-  if (error) return <div className="banner bad">{error}</div>;
-  return (
-    <div className="video-wrap">
-      <video ref={video} playsInline muted />
-      <div className="video-frame" />
-      <canvas ref={canvas} hidden />
-    </div>
   );
 }

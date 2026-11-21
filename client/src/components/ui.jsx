@@ -75,7 +75,7 @@ export function Kpi({ icon: I, label, value, unit, sub, tone }) {
 }
 
 /** Lista de fases con barra de progreso, kg y estado. Cada % se calcula con sus propias cantidades. */
-export function PhaseList({ fases, compact, onClick }) {
+export function PhaseList({ fases, compact, onClick, sinEstado }) {
   return (
     <div className="phase-list">
       {fases.map((fs) => {
@@ -90,7 +90,7 @@ export function PhaseList({ fases, compact, onClick }) {
             <Bar value={fs.porcentaje} tone={tone === 'idle' ? '' : tone} label={fs.nombre} />
             <div className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
               <span className="phase-pct">{f.pct(fs.porcentaje)}</span>
-              {!compact && <span className="hide-m"><Status estado={fs.estado} small /></span>}
+              {!compact && !sinEstado && <span className="hide-m"><Status estado={fs.estado} small /></span>}
             </div>
           </div>
         );
@@ -163,9 +163,9 @@ export function Field({ label, hint, children, full }) {
   );
 }
 
-export function Tabs({ tabs, value, onChange }) {
+export function Tabs({ tabs, value, onChange, ancho }) {
   return (
-    <div className="tabs" role="tablist">
+    <div className={`tabs ${ancho ? 'tabs-ancho' : ''}`} role="tablist">
       {tabs.map((t) => (
         <button key={t.id} role="tab" aria-selected={value === t.id} className={value === t.id ? 'on' : ''} onClick={() => onChange(t.id)}>
           {t.icon && <t.icon size={18} />}{t.label}

@@ -10,10 +10,11 @@ const ESTADOS = ['planificada', 'en_curso', 'pausada', 'terminada', 'cancelada']
 
 function leerObra(b) {
   return {
-    codigo: str(b.codigo, 'código', { required: true, max: 40 }).toUpperCase(),
+    codigo: str(b.codigo, 'código', { max: 40 }).toUpperCase(),
     nombre: str(b.nombre, 'nombre', { required: true, max: 200 }),
     cliente: str(b.cliente, 'cliente'),
     direccion: str(b.direccion, 'dirección de montaje'),
+    ciudad: str(b.ciudad, 'ciudad', { max: 120 }),
     responsable_id: b.responsable_id ? num(b.responsable_id, 'responsable', { int: true }) : null,
     fecha_inicio: date(b.fecha_inicio, 'inicio'),
     fecha_entrega: date(b.fecha_entrega, 'entrega'),
@@ -37,9 +38,15 @@ r.post('/', requirePerm('obras.editar'), wrap(async (req, res) => {
   const o = leerObra(req.body);
   if (o.fecha_inicio && o.fecha_entrega && o.fecha_entrega < o.fecha_inicio) throw bad('La fecha de entrega no puede ser anterior a la de inicio.');
   const obra = await tx(async (db) => {
+    if (!o.codigo) {
+      // Código automático: OB-AAAA-NNN
+      const y = new Date().getFullYear();
+      const { rows: [m] } = await db.query(`SELECT COALESCE(MAX(substring(codigo from '^OB-${y}-(\\d+)$')::int), 0) + 1 AS n FROM obras`);
+      o.codigo = `OB-${y}-${String(m.n).padStart(3, '0')}`;
+    }
     const { rows: [n] } = await db.query(
-      `INSERT INTO obras (codigo,nombre,cliente,direccion,responsable_id,fecha_inicio,fecha_entrega,kg_contratados,kg_previstos_fab,kg_previstos_montaje,presupuesto,estado,observaciones)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`, Object.values(o));
+      `INSERT INTO obras (codigo,nombre,cliente,direccion,ciudad,responsable_id,fecha_inicio,fecha_entrega,kg_contratados,kg_previstos_fab,kg_previstos_montaje,presupuesto,estado,observaciones)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`, Object.values(o));
     await crearFasesPorDefecto(db, n.id);
     await audit(db, { entidad: 'obra', entidadId: n.id, obraId: n.id, accion: 'crear', detalle: `Obra ${n.codigo} creada con las 9 fases por defecto`, usuarioId: req.user.id });
     return n;
@@ -56,10 +63,11 @@ r.put('/:id', requirePerm('obras.editar'), wrap(async (req, res) => {
   const cur = await one('SELECT * FROM obras WHERE id=$1', [id]);
   if (!cur) throw notFound('No se ha encontrado la obra.');
   const o = leerObra({ ...cur, ...req.body });
+  if (!o.codigo) o.codigo = cur.codigo;
   if (o.fecha_inicio && o.fecha_entrega && o.fecha_entrega < o.fecha_inicio) throw bad('La fecha de entrega no puede ser anterior a la de inicio.');
   const cambios = Object.keys(o).filter((k) => String(o[k] ?? '') !== String(cur[k] ?? ''));
-  await q(`UPDATE obras SET codigo=$1,nombre=$2,cliente=$3,direccion=$4,responsable_id=$5,fecha_inicio=$6,fecha_entrega=$7,kg_contratados=$8,
-           kg_previstos_fab=$9,kg_previstos_montaje=$10,presupuesto=$11,estado=$12,observaciones=$13,actualizado_en=now() WHERE id=$14`,
+  await q(`UPDATE obras SET codigo=$1,nombre=$2,cliente=$3,direccion=$4,ciudad=$5,responsable_id=$6,fecha_inicio=$7,fecha_entrega=$8,kg_contratados=$9,
+           kg_previstos_fab=$10,kg_previstos_montaje=$11,presupuesto=$12,estado=$13,observaciones=$14,actualizado_en=now() WHERE id=$15`,
   [...Object.values(o), id]);
   if (cambios.length) {
     await audit({ query: q }, { entidad: 'obra', entidadId: id, obraId: id, accion: 'editar', detalle: `Cambios: ${cambios.join(', ')}`,
