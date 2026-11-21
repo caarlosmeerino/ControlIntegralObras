@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Cloud, FolderOpen, FileText, MoreHorizontal, ExternalLink, Pencil, Trash2, ClipboardPaste } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Plus, Cloud, FolderOpen, FileText, MoreHorizontal, ExternalLink, Pencil, Trash2, ClipboardPaste, Link2 } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { post, put, del, qs } from '../lib/api.js';
 import { Loading, Sheet, Field, ActionSheet, Empty } from './ui.jsx';
@@ -12,6 +12,16 @@ const TXT = {
 
 const esICloud = (url) => /(^|\.)icloud\.com$/i.test(new URL(url).hostname);
 const esCarpeta = (url) => /\/iclouddrive\/[^#]*$/i.test(url) || /folder|carpeta/i.test(url);
+const ESPERA = 'cio-esperando-icloud';
+const esIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+/** Abre la app Archivos (iPhone/iPad) o iCloud Drive en el navegador */
+function abrirICloud(obraId, tipo) {
+  try { sessionStorage.setItem(ESPERA, JSON.stringify({ obraId, tipo, t: Date.now() })); } catch { /* sin almacenamiento */ }
+  if (esIOS()) window.location.href = 'shareddocuments://';
+  else window.open('https://www.icloud.com/iclouddrive/', '_blank', 'noopener');
+}
+const leerEspera = () => { try { const v = JSON.parse(sessionStorage.getItem(ESPERA) || 'null'); return v && Date.now() - v.t < 30 * 60 * 1000 ? v : null; } catch { return null; } };
+const olvidarEspera = () => { try { sessionStorage.removeItem(ESPERA); } catch { /* */ } };
 const origen = (url) => { try { return esICloud(url) ? 'iCloud Drive' : new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
 
 function Formulario({ obraId, tipo, enlace, onClose, onSaved }) {
@@ -39,10 +49,8 @@ function Formulario({ obraId, tipo, enlace, onClose, onSaved }) {
           <div className="pasos-icloud">
             <div className="row" style={{ gap: 10 }}><span className="icono-nube"><Cloud size={18} /></span><b>Cómo copiar el enlace en iCloud</b></div>
             <ol>
-              <li>Abre la app <b>Archivos</b> (o icloud.com) y busca el archivo o la carpeta.</li>
-              <li>Mantén pulsado → <b>Compartir</b> → <b>Colaborar / Copiar enlace</b>.</li>
-              <li>En «Quién puede acceder» elige <b>Cualquiera con el enlace</b> o las personas de tu equipo.</li>
-              <li>Vuelve aquí y pega el enlace.</li>
+              <li>En iCloud, mantén pulsado el archivo o la carpeta → <b>Compartir</b> → <b>Copiar enlace</b>.</li>
+              <li>Pega el enlace aquí abajo.</li>
             </ol>
           </div>
         )}
@@ -58,13 +66,48 @@ function Formulario({ obraId, tipo, enlace, onClose, onSaved }) {
   );
 }
 
+/** Tarjeta que aparece al volver de iCloud: añade con un toque el enlace copiado */
+function AlVolver({ obraId, tipo, onClose, onSaved, onManual }) {
+  const { toast, toastError } = useApp();
+  const [busy, setBusy] = useState(false);
+  const pegar = async () => {
+    setBusy(true);
+    try {
+      const texto = (await navigator.clipboard.readText()).trim();
+      const url = (texto.match(/https:\/\/\S+/) || [])[0];
+      if (!url) { toastError(new Error('No hay ningún enlace copiado. En iCloud usa «Compartir → Copiar enlace» y vuelve a intentarlo.')); return; }
+      const r = await post('/enlaces', { obra_id: obraId, tipo, url });
+      toast(`«${r.nombre}» enlazado.`); olvidarEspera(); onSaved(); onClose();
+    } catch (e) {
+      if (e?.name === 'NotAllowedError') { olvidarEspera(); onClose(); onManual(); } else toastError(e);
+    } finally { setBusy(false); }
+  };
+  return (
+    <ActionSheet onClose={() => { olvidarEspera(); onClose(); }}
+      titulo={<div className="cuenta-cab"><span className="icono-nube grande"><Cloud size={28} /></span><b>¿Has copiado el enlace en iCloud?</b><span>Añádelo con un toque</span></div>}
+      opciones={[
+        { value: 'pegar', label: busy ? 'Añadiendo…' : 'Añadir lo que has copiado', icon: ClipboardPaste, onClick: pegar },
+        { value: 'otra', label: 'Volver a iCloud', icon: Cloud, onClick: () => abrirICloud(obraId, tipo) },
+        { value: 'manual', label: 'Escribir el enlace a mano', icon: Link2, onClick: () => { olvidarEspera(); onManual(); } },
+      ]} />
+  );
+}
+
 /** Lista de planos o documentos enlazados desde iCloud (no se sube ningún archivo) */
 export default function Enlaces({ obraId, tipo }) {
   const { can, toast, toastError } = useApp();
   const { data, loading, reload } = useData(`/enlaces${qs({ obra_id: obraId, tipo })}`);
   const [form, setForm] = useState(null);
   const [menu, setMenu] = useState(null);
+  const [volver, setVolver] = useState(false);
   const t = TXT[tipo];
+  useEffect(() => {
+    // Al volver a la app desde iCloud, ofrecer añadir el enlace copiado
+    const comprobar = () => { const v = leerEspera(); if (document.visibilityState === 'visible' && v && v.obraId === obraId && v.tipo === tipo) setVolver(true); };
+    comprobar();
+    document.addEventListener('visibilitychange', comprobar); window.addEventListener('focus', comprobar);
+    return () => { document.removeEventListener('visibilitychange', comprobar); window.removeEventListener('focus', comprobar); };
+  }, [obraId, tipo]);
   if (loading && !data) return <Loading />;
   const borrar = async (e) => {
     if (!confirm(`¿Quitar el enlace «${e.nombre}»? El archivo de iCloud no se borra.`)) return;
@@ -75,7 +118,12 @@ export default function Enlaces({ obraId, tipo }) {
       <div className="card">
         <div className="card-head">
           <div><h2>{t.titulo}</h2><p>Enlaces a iCloud Drive: los archivos siguen en tu iCloud y siempre se abre la última versión.</p></div>
-          {can('archivos.subir') && <button className="btn primary" onClick={() => setForm({})}><Plus size={18} />Añadir enlace</button>}
+          {can('archivos.subir') && (
+            <div className="btn-row">
+              <button className="btn primary" onClick={() => abrirICloud(obraId, tipo)}><Cloud size={18} />Elegir en iCloud</button>
+              <button className="btn" onClick={() => setForm({})}><Plus size={18} />Pegar enlace</button>
+            </div>
+          )}
         </div>
         {!data?.length ? <Empty icon={Cloud} title={t.vacio}>Enlaza un archivo o una carpeta entera de iCloud.</Empty> : (
           <div className="lista lista-plana">
@@ -98,6 +146,7 @@ export default function Enlaces({ obraId, tipo }) {
           </div>
         )}
       </div>
+      {volver && <AlVolver obraId={obraId} tipo={tipo} onClose={() => setVolver(false)} onSaved={reload} onManual={() => setForm({})} />}
       {form && <Formulario obraId={obraId} tipo={tipo} enlace={form.id ? form : null} onClose={() => setForm(null)} onSaved={reload} />}
       {menu && (
         <ActionSheet titulo={menu.nombre} onClose={() => setMenu(null)} opciones={[
