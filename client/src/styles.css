@@ -540,3 +540,6 @@ textarea.input { min-height: 96px; resize: vertical; }
 .picker-nombre { display: block; font-size: 1.02rem; font-weight: 500; }
 .picker-sub { display: block; font-size: .82rem; color: var(--text-3); margin-top: 1px; }
 .picker-fila:has(.avatar-cliente.nuevo) .picker-nombre { color: var(--accent); }
+.pin-circulo { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; flex: none; color: #fff; background: linear-gradient(180deg, #ff6b6b, #e5383b); }
+.pin-circulo.grande { width: 40px; height: 40px; }
+.picker .empty svg { color: var(--text-3); }

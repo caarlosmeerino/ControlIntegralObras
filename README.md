@@ -17,6 +17,8 @@ Aplicación web para gestionar la **fabricación y el montaje de estructuras met
    - *Fabricación*: despiece con el avance de taller (fases de oficina y taller) y botón «Avanzar».
    - *Montaje*: el mismo despiece visto desde obra (en obra, montadas) y botón «Avanzar».
 
+La **ciudad** se elige de los 8.132 municipios oficiales del INE (`client/public/municipios.json`, generado del paquete `spanish-cities-info`, licencia ISC); el servidor rechaza municipios que no existan y guarda también la provincia.
+
 El escaneo QR y los apartados de personal, informes y partes se han retirado de la interfaz para simplificarla
 (la API y la base de datos los conservan por si se recuperan más adelante).
 

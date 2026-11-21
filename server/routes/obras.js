@@ -3,6 +3,7 @@ import { many, one, q, tx } from '../db.js';
 import { wrap, bad, notFound, num, str, date, oneOf } from '../http.js';
 import { requirePerm } from '../auth.js';
 import { audit } from '../audit.js';
+import { resolverCiudad } from '../municipios.js';
 import { resumenObras, resumenObra, crearFasesPorDefecto } from '../services/produccion.js';
 
 const r = Router();
@@ -14,7 +15,7 @@ function leerObra(b) {
     nombre: str(b.nombre, 'nombre', { required: true, max: 200 }),
     cliente: str(b.cliente, 'cliente'),
     direccion: str(b.direccion, 'dirección de montaje'),
-    ciudad: str(b.ciudad, 'ciudad', { max: 120 }),
+    ...resolverCiudad(str(b.ciudad, 'ciudad', { max: 120 }), str(b.provincia, 'provincia', { max: 80 })),
     responsable_id: b.responsable_id ? num(b.responsable_id, 'responsable', { int: true }) : null,
     fecha_inicio: date(b.fecha_inicio, 'inicio'),
     fecha_entrega: date(b.fecha_entrega, 'entrega'),
@@ -45,8 +46,8 @@ r.post('/', requirePerm('obras.editar'), wrap(async (req, res) => {
       o.codigo = `OB-${y}-${String(m.n).padStart(3, '0')}`;
     }
     const { rows: [n] } = await db.query(
-      `INSERT INTO obras (codigo,nombre,cliente,direccion,ciudad,responsable_id,fecha_inicio,fecha_entrega,kg_contratados,kg_previstos_fab,kg_previstos_montaje,presupuesto,estado,observaciones)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`, Object.values(o));
+      `INSERT INTO obras (codigo,nombre,cliente,direccion,ciudad,provincia,responsable_id,fecha_inicio,fecha_entrega,kg_contratados,kg_previstos_fab,kg_previstos_montaje,presupuesto,estado,observaciones)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`, Object.values(o));
     await crearFasesPorDefecto(db, n.id);
     await audit(db, { entidad: 'obra', entidadId: n.id, obraId: n.id, accion: 'crear', detalle: `Obra ${n.codigo} creada con las 9 fases por defecto`, usuarioId: req.user.id });
     return n;
@@ -66,8 +67,8 @@ r.put('/:id', requirePerm('obras.editar'), wrap(async (req, res) => {
   if (!o.codigo) o.codigo = cur.codigo;
   if (o.fecha_inicio && o.fecha_entrega && o.fecha_entrega < o.fecha_inicio) throw bad('La fecha de entrega no puede ser anterior a la de inicio.');
   const cambios = Object.keys(o).filter((k) => String(o[k] ?? '') !== String(cur[k] ?? ''));
-  await q(`UPDATE obras SET codigo=$1,nombre=$2,cliente=$3,direccion=$4,ciudad=$5,responsable_id=$6,fecha_inicio=$7,fecha_entrega=$8,kg_contratados=$9,
-           kg_previstos_fab=$10,kg_previstos_montaje=$11,presupuesto=$12,estado=$13,observaciones=$14,actualizado_en=now() WHERE id=$15`,
+  await q(`UPDATE obras SET codigo=$1,nombre=$2,cliente=$3,direccion=$4,ciudad=$5,provincia=$6,responsable_id=$7,fecha_inicio=$8,fecha_entrega=$9,kg_contratados=$10,
+           kg_previstos_fab=$11,kg_previstos_montaje=$12,presupuesto=$13,estado=$14,observaciones=$15,actualizado_en=now() WHERE id=$16`,
   [...Object.values(o), id]);
   if (cambios.length) {
     await audit({ query: q }, { entidad: 'obra', entidadId: id, obraId: id, accion: 'editar', detalle: `Cambios: ${cambios.join(', ')}`,

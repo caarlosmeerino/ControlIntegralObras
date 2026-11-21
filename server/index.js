@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
 import { pool } from './db.js';
 import { migrate } from './migrate.js';
+import { rellenarProvincias } from './municipios.js';
 import { loadUser, requireAuth } from './auth.js';
 import { errorHandler } from './http.js';
 import { programarTareas } from './services/tareas.js';
@@ -74,6 +75,7 @@ if (fs.existsSync(dist)) {
 
 const start = async () => {
   await migrate();
+  await rellenarProvincias(pool).catch((e) => console.warn('[municipios]', e.message));
   if (process.env.SEED_DEMO === 'true') {
     // Datos de ejemplo bajo demanda (solo añade; si ya existen no hace nada)
     const { sembrar } = await import('../scripts/seed.js');

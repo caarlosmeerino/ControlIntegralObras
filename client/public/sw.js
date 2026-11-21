@@ -1,5 +1,5 @@
 // Service worker: la app abre sin conexión y muestra los últimos datos vistos.
-const VERSION = 'cio-v1';
+const VERSION = 'cio-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/icono.svg', '/tema.js'];
 
 self.addEventListener('install', (e) => {
@@ -24,7 +24,7 @@ self.addEventListener('fetch', (e) => {
     }).catch(() => caches.open(VERSION + '-api').then((c) => c.match(req)).then((r) => r || new Response(JSON.stringify({ error: 'Sin conexión y sin datos guardados para esta pantalla.' }), { status: 503, headers: { 'Content-Type': 'application/json' } }))));
     return;
   }
-  if (url.pathname.startsWith('/assets/')) {
+  if (url.pathname.startsWith('/assets/') || url.pathname === '/municipios.json') {
     e.respondWith(caches.match(req).then((r) => r || fetch(req).then((res) => { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); return res; })));
     return;
   }

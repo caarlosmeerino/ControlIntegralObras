@@ -4,6 +4,7 @@ import { post, put } from '../lib/api.js';
 import { Sheet, Field, Selector } from './ui.jsx';
 import * as f from '../lib/format.js';
 import ClientePicker from './ClientePicker.jsx';
+import CiudadPicker from './CiudadPicker.jsx';
 
 const toKg = (v) => { const n = f.parseNum(v); return n == null ? 0 : n * 1000; };
 const toT = (kg) => (kg ? String(Number(kg) / 1000).replace('.', ',') : '');
@@ -13,7 +14,7 @@ export default function ObraForm({ obra, clientes = [], cliente = '', onClose, o
   const { toast, toastError, can } = useApp();
   const [d, setD] = useState(() => obra
     ? { ...obra, toneladas: toT(obra.kg_previstos_fab), presupuesto: obra.presupuesto ? String(obra.presupuesto).replace('.', ',') : '' }
-    : { codigo: '', nombre: '', cliente, ciudad: '', direccion: '', fecha_inicio: f.hoyISO(), fecha_entrega: '', toneladas: '', presupuesto: '', estado: 'en_curso', observaciones: '' });
+    : { codigo: '', nombre: '', cliente, ciudad: '', provincia: '', direccion: '', fecha_inicio: f.hoyISO(), fecha_entrega: '', toneladas: '', presupuesto: '', estado: 'en_curso', observaciones: '' });
   const [busy, setBusy] = useState(false);
   const s = (k) => (e) => setD({ ...d, [k]: e.target.value });
   const guardar = async (e) => {
@@ -34,7 +35,7 @@ export default function ObraForm({ obra, clientes = [], cliente = '', onClose, o
       <form className="form-grid" onSubmit={guardar}>
         <Field label="Nombre del proyecto" full><input className="input" value={d.nombre} onChange={s('nombre')} placeholder="Ej.: Nave industrial Plaza" autoFocus={!obra} /></Field>
         <Field label="Cliente"><ClientePicker value={d.cliente} onChange={(c) => setD({ ...d, cliente: c })} /></Field>
-        <Field label="Ciudad"><input className="input" value={d.ciudad} onChange={s('ciudad')} placeholder="Ej.: Zaragoza" /></Field>
+        <Field label="Ciudad"><CiudadPicker value={{ ciudad: d.ciudad, provincia: d.provincia }} onChange={(c) => setD({ ...d, ...c })} /></Field>
         <Field label="Dirección de montaje" full><input className="input" value={d.direccion} onChange={s('direccion')} /></Field>
         <Field label="Inicio"><input type="date" className="input" value={d.fecha_inicio || ''} onChange={s('fecha_inicio')} /></Field>
         <Field label="Entrega"><input type="date" className="input" value={d.fecha_entrega || ''} onChange={s('fecha_entrega')} /></Field>
