@@ -113,7 +113,6 @@ export default function ObraDetalle() {
                     </a>
                   ) : '—'}
                 </dd>
-                <dt>Previsto</dt><dd>{f.kg(o.kg_previstos_fab)} · {f.m2(o.m2_previstos)} · {f.ml(o.ml_previstos)}</dd>
                 <dt>Despiece</dt><dd>{f.kg(r.kg_unicos)} · {f.m2(o.m2_despiece)} · {f.ml(o.ml_despiece)}</dd>
                 {o.observaciones && <><dt>Notas</dt><dd>{o.observaciones}</dd></>}
               </dl>
