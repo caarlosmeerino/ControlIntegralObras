@@ -7,16 +7,15 @@ import { pool, tx } from '../server/db.js';
 import { migrate } from '../server/migrate.js';
 import { crearFasesPorDefecto, completarHasta, hoy } from '../server/services/produccion.js';
 
-const args = process.argv.slice(2);
-const soloPrueba = args.includes('--prueba');
-const reset = args.includes('--reset');
 const PASS = process.env.SEED_PASSWORD || 'Demo2026!';
 
 const diasAtras = (n, h = 9) => { const d = new Date(hoy() + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - n); d.setUTCHours(h, 15); return d.toISOString(); };
 const fecha = (n) => diasAtras(n).slice(0, 10);
 const enDias = (n) => { const d = new Date(hoy() + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 
-async function main() {
+/** Carga los datos de ejemplo. Solo añade: no borra nada salvo con reset. */
+export async function sembrar({ soloPrueba = false, reset = false, log = console.log } = {}) {
+  const console = { log };
   await migrate({ log: () => {} });
   if (reset) {
     await pool.query(`TRUNCATE obras, piezas, movimientos, historial, partes_horas, partes_montaje, trabajadores, equipos, medios, archivos, costes, presupuesto_partidas RESTART IDENTITY CASCADE`);
@@ -191,4 +190,8 @@ async function main() {
   });
 }
 
-main().then(() => pool.end()).catch((e) => { console.error(e); process.exit(1); });
+if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop())) {
+  const args = process.argv.slice(2);
+  sembrar({ soloPrueba: args.includes('--prueba'), reset: args.includes('--reset') })
+    .then(() => pool.end()).catch((e) => { console.error(e); process.exit(1); });
+}

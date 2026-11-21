@@ -74,6 +74,11 @@ if (fs.existsSync(dist)) {
 
 const start = async () => {
   await migrate();
+  if (process.env.SEED_DEMO === 'true') {
+    // Datos de ejemplo bajo demanda (solo añade; si ya existen no hace nada)
+    const { sembrar } = await import('../scripts/seed.js');
+    await sembrar({ log: (m) => console.log('[demo]', m) }).catch((e) => console.error('[demo] no se pudieron cargar:', e.message));
+  }
   programarTareas();
   app.listen(config.port, () => console.log(`[servidor] escuchando en el puerto ${config.port}`));
 };
