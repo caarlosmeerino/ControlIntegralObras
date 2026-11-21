@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HardHat } from 'lucide-react';
+import { Casco as HardHat } from '../components/iconos.jsx';
 import { useApp, useData } from '../lib/app.jsx';
 import { Loading, ErrorBox, DataTable, Bar, Kpi, Status } from '../components/ui.jsx';
 import * as f from '../lib/format.js';

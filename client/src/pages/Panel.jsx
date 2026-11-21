@@ -1,7 +1,8 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { Weight, Factory, Truck, Hammer, AlertOctagon, QrCode, HardHat, Wrench, Building2, AlertTriangle, ArrowRight, Info } from 'lucide-react';
+import { ArrowRight, Info } from 'lucide-react';
+import { Bascula, PerfilH, Grua, Peligro, Escaner, Casco, Soldadura, Nave } from '../components/iconos.jsx';
 import { useApp, useData } from '../lib/app.jsx';
-import { Kpi, Loading, ErrorBox, Ring, Bar, Status, BarChart, SERIES_FASES, Empty, toneOf } from '../components/ui.jsx';
+import { Kpi, Loading, ErrorBox, Ring, Status, BarChart, SERIES_FASES, Empty, LineaProduccion } from '../components/ui.jsx';
 import * as f from '../lib/format.js';
 
 export function ObraCard({ o }) {
@@ -15,22 +16,14 @@ export function ObraCard({ o }) {
           <h3 className="mt-s">{o.nombre}</h3>
           <div className="small muted">{o.cliente} · entrega {f.fecha(o.fecha_entrega)}</div>
         </div>
-        <Ring value={r.avance_global} size={78} stroke={9} label="global" tone={r.retrasada ? 'bad' : undefined} />
+        <Ring value={r.avance_global} size={104} stroke={11} label="global" tone={r.retrasada ? 'bad' : undefined} />
       </div>
       <div className="grid g3" style={{ gap: 8, gridTemplateColumns: 'repeat(3,1fr)' }}>
         <div><div className="xs muted">Únicas</div><div className="strong num">{f.t(r.kg_unicos, 1)}</div></div>
         <div><div className="xs muted">Fabricadas</div><div className="strong num">{f.t(r.kg_fabricados, 1)}</div></div>
         <div><div className="xs muted">Montadas</div><div className="strong num">{f.t(r.kg_montados, 1)}</div></div>
       </div>
-      <div className="stack" style={{ gap: 6 }}>
-        {r.fases.filter((x) => ['corte', 'armado', 'pintura', 'expedicion', 'montaje'].includes(x.clave)).map((x) => (
-          <div key={x.id} className="row" style={{ gap: 10 }}>
-            <span className="xs" style={{ width: 92, color: 'var(--text-2)', fontWeight: 600 }}>{x.nombre.split(' ')[0]}</span>
-            <div className="grow"><Bar value={x.porcentaje} tone={toneOf(x.estado) === 'idle' ? '' : toneOf(x.estado)} label={x.nombre} /></div>
-            <span className="xs strong num" style={{ width: 48, textAlign: 'right' }}>{f.num(x.porcentaje)} %</span>
-          </div>
-        ))}
-      </div>
+      <LineaProduccion fases={r.fases} compact />
     </div>
   );
 }
@@ -43,11 +36,11 @@ export default function Panel() {
   if (error && !data) return <ErrorBox error={error} retry={reload} />;
   const k = data.kpis;
   const acciones = [
-    can('piezas.ver') && { to: '/escanear', icon: QrCode, t: 'Escanear pieza', s: 'Ver ficha y registrar avance' },
-    can('avance.taller') && { to: '/fabricacion', icon: Factory, t: 'Avance de fabricación', s: 'Piezas pendientes por fase' },
-    can('partes.montaje') && { to: '/control-obra', icon: HardHat, t: 'Parte de montaje', s: 'Registro diario en obra' },
-    can('partes.taller') && { to: '/taller', icon: Wrench, t: 'Registrar horas', s: 'Parte de horas del taller' },
-    can('obras.editar') && { to: '/obras?nueva=1', icon: Building2, t: 'Nueva obra', s: 'Alta con las 9 fases' },
+    can('piezas.ver') && { to: '/escanear', icon: Escaner, t: 'Escanear pieza', s: 'Ver ficha y registrar avance' },
+    can('avance.taller') && { to: '/fabricacion', icon: PerfilH, t: 'Avance de fabricación', s: 'Piezas pendientes por fase' },
+    can('partes.montaje') && { to: '/control-obra', icon: Casco, t: 'Parte de montaje', s: 'Registro diario en obra' },
+    can('partes.taller') && { to: '/taller', icon: Soldadura, t: 'Registrar horas', s: 'Parte de horas del taller' },
+    can('obras.editar') && { to: '/obras?nueva=1', icon: Nave, t: 'Nueva obra', s: 'Alta con las 9 fases' },
   ].filter(Boolean).slice(0, 4);
   return (
     <>
@@ -57,15 +50,15 @@ export default function Panel() {
       <div className="grid g4 mb">
         {acciones.map((a) => (
           <button key={a.to} className="big-action" onClick={() => nav(a.to)}>
-            <span className="ico"><a.icon size={26} /></span><span>{a.t}<small>{a.s}</small></span>
+            <span className="ico"><a.icon size={30} /></span><span>{a.t}<small>{a.s}</small></span>
           </button>
         ))}
       </div>
       <div className="grid g4 mb">
-        <Kpi icon={Weight} label="Toneladas únicas" value={f.tNum(k.kg_unicos, 1)} unit="t" sub={`Previstas: ${f.t(k.kg_previstos_fab, 1)}`} />
-        <Kpi icon={Factory} label="Fabricadas" value={f.tNum(k.kg_fabricados, 1)} unit="t" tone="ok" sub={`Pendiente: ${f.t(k.kg_pendiente_fabricar, 1)}`} />
-        <Kpi icon={Truck} label="Montadas" value={f.tNum(k.kg_montados, 1)} unit="t" tone="ok" sub={`Pendiente: ${f.t(k.kg_pendiente_montar, 1)}`} />
-        <Kpi icon={k.obras_retrasadas ? AlertOctagon : Hammer} label="Obras con retraso" value={k.obras_retrasadas} tone={k.obras_retrasadas ? 'bad' : 'ok'} sub={`de ${k.obras_activas} activas`} />
+        <Kpi icon={Bascula} label="Toneladas únicas" value={f.tNum(k.kg_unicos, 1)} unit="t" sub={`Previstas: ${f.t(k.kg_previstos_fab, 1)}`} />
+        <Kpi icon={PerfilH} label="Fabricadas" value={f.tNum(k.kg_fabricados, 1)} unit="t" tone="ok" sub={`Pendiente: ${f.t(k.kg_pendiente_fabricar, 1)}`} />
+        <Kpi icon={Grua} label="Montadas" value={f.tNum(k.kg_montados, 1)} unit="t" tone="ok" sub={`Pendiente: ${f.t(k.kg_pendiente_montar, 1)}`} />
+        <Kpi icon={Peligro} label="Obras con retraso" value={k.obras_retrasadas} tone={k.obras_retrasadas ? 'bad' : 'ok'} sub={`de ${k.obras_activas} activas`} />
       </div>
       <div className="grid g3 mb">
         <div className="card span2">
@@ -80,7 +73,7 @@ export default function Panel() {
         <div className="card">
           <h2>Hoy</h2>
           <div className="stack mt" style={{ gap: 12 }}>
-            {[['Cortado', k.hoy_cortados, '#5b8fc7'], ['Armado y soldado', k.hoy_armados, '#2b5f8e'], ['Pintado', k.hoy_pintados, '#d97706'], ['Montado', k.hoy_montados, '#15803d']].map(([l, v, c]) => (
+            {[['Cortado', k.hoy_cortados, '#8e9aa6'], ['Armado y soldado', k.hoy_armados, 'var(--text)'], ['Pintado', k.hoy_pintados, '#e8a400'], ['Montado', k.hoy_montados, 'var(--ok)']].map(([l, v, c]) => (
               <div key={l} className="row between"><span className="row" style={{ gap: 8 }}><i className="dot" style={{ background: c }} />{l}</span><b className="num">{f.t(v)}</b></div>
             ))}
           </div>
@@ -105,7 +98,7 @@ export default function Panel() {
           <h2 className="mb">Incidencias abiertas</h2>
           {data.incidencias.length ? data.incidencias.map((p) => (
             <Link key={p.id} to={`/piezas/${p.id}`} className="file-row" style={{ color: 'var(--text)' }}>
-              <AlertTriangle size={20} style={{ color: 'var(--bad)' }} /><span className="marca">{p.marca}</span>
+              <Peligro size={22} style={{ color: 'var(--bad)' }} /><span className="marca">{p.marca}</span>
               <div className="grow small"><span className="code">{p.codigo}</span> {p.observaciones}</div>
             </Link>
           )) : <Empty title="Sin incidencias" />}

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { QrCode, Keyboard } from 'lucide-react';
+import { Keyboard } from 'lucide-react';
+import { Escaner as QrCode } from '../components/iconos.jsx';
 import { QrScanner } from '../components/Avance.jsx';
 import { get } from '../lib/api.js';
 import { useApp } from '../lib/app.jsx';

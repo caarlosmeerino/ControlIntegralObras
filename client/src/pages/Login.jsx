@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { post } from '../lib/api.js';
+import { PerfilH } from '../components/iconos.jsx';
 import { useApp } from '../lib/app.jsx';
 
 export default function Login() {
@@ -16,8 +17,8 @@ export default function Login() {
     <div className="login">
       <form className="card stack" onSubmit={enviar}>
         <div className="row" style={{ gap: 14 }}>
-          <img src="/icono.svg" alt="" width="56" height="56" style={{ borderRadius: 14 }} />
-          <div><h1 style={{ fontSize: '1.35rem' }}>Control Integral de Obras</h1><div className="muted small">Fabricación y montaje de estructuras metálicas</div></div>
+          <span style={{ width: 60, height: 60, display: 'grid', placeItems: 'center', background: 'var(--acento)', color: '#191b1d', flex: 'none' }}><PerfilH size={34} /></span>
+          <div><h1 style={{ fontSize: '1.9rem', lineHeight: 1 }}>Control <span style={{ color: 'var(--link)' }}>Integral</span></h1><div className="muted small">Fabricación y montaje de estructuras metálicas</div></div>
         </div>
         {error && <div className="banner bad" role="alert">{error}</div>}
         <div className="field"><label htmlFor="u">Usuario</label>

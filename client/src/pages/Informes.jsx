@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FileText, FileSpreadsheet, FileDown, Play, CalendarClock } from 'lucide-react';
+import { FileSpreadsheet, FileDown, Play, CalendarClock } from 'lucide-react';
+import { Albaran as FileText } from '../components/iconos.jsx';
 import { useApp, useData } from '../lib/app.jsx';
 import { post, put, qs } from '../lib/api.js';
 import { Loading, ErrorBox, Field, Seg, Empty } from '../components/ui.jsx';
@@ -48,8 +49,8 @@ export default function Informes() {
       <div className="page-head"><div><h1>Informes</h1><p>Consulta en pantalla y exporta a PDF o Excel.</p></div></div>
       <div className="grid g4 mb" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
         {cat.data.map((c) => (
-          <button key={c.clave} className="big-action" onClick={() => setTipo(c.clave)} style={{ minHeight: 70, borderColor: tipo === c.clave ? 'var(--primary)' : undefined, boxShadow: tipo === c.clave ? '0 0 0 2px var(--primary-soft)' : undefined }}>
-            <span className="ico" style={{ width: 40, height: 40, background: tipo === c.clave ? 'var(--primary)' : 'var(--surface-3)', color: tipo === c.clave ? 'var(--on-primary)' : 'var(--text-2)' }}><FileText size={20} /></span>
+          <button key={c.clave} className="big-action" onClick={() => setTipo(c.clave)} style={{ minHeight: 76, fontSize: '1.05rem', outline: tipo === c.clave ? '3px solid var(--acento)' : undefined, outlineOffset: -3 }}>
+            <span className="ico" style={{ width: 40, height: 40, background: tipo === c.clave ? 'var(--acento)' : '#30353a', color: tipo === c.clave ? '#191b1d' : '#c9c7c0' }}><FileText size={20} /></span>
             <span className="small">{c.nombre}</span>
           </button>
         ))}

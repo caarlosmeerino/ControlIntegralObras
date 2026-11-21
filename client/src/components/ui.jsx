@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, CheckCircle2, Clock, AlertOctagon, Circle, Inbox, AlertTriangle, RefreshCw, Minus, Plus } from 'lucide-react';
 import * as f from '../lib/format.js';
+import { ICONO_FASE, PerfilH } from './iconos.jsx';
 
 export const Loading = () => <div className="spinner" role="status" aria-label="Cargando" />;
 
@@ -43,27 +44,31 @@ export function Bar({ value, tone, thick, label }) {
   );
 }
 
+/** Manómetro semicircular con escala graduada (sustituye al anillo) */
 export function Ring({ value, size = 96, stroke = 10, label, tone }) {
   const v = Math.max(0, Math.min(100, Number(value) || 0));
-  const r = (size - stroke) / 2; const c = 2 * Math.PI * r;
-  const color = tone ? `var(--${tone})` : v >= 100 ? 'var(--ok)' : 'var(--primary)';
+  const W = size, H = Math.round(size * 0.66), r = (size - stroke) / 2 - 2, cx = W / 2, cy = r + stroke / 2 + 2;
+  const pt = (pct, rr) => { const a = Math.PI * (1 - pct / 100); return [cx + rr * Math.cos(a), cy - rr * Math.sin(a)]; };
+  const arc = (from, to) => { const [x1, y1] = pt(from, r); const [x2, y2] = pt(to, r); return `M${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2}`; };
+  const color = tone ? `var(--${tone})` : v >= 100 ? 'var(--ok)' : 'var(--acento)';
+  const [nx, ny] = pt(v, r - stroke * 0.9);
   return (
-    <div className="ring" style={{ width: size, height: size }} role="img" aria-label={`${label || 'Avance'}: ${f.pct(v)}`}>
-      <svg width={size} height={size}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--surface-3)" strokeWidth={stroke} />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={c * (1 - v / 100)} style={{ transition: 'stroke-dashoffset .5s' }} />
+    <div className="gauge" style={{ width: W }} role="img" aria-label={`${label || 'Avance'}: ${f.pct(v)}`}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+        <path d={arc(0, 100)} stroke="var(--surface-3)" strokeWidth={stroke} fill="none" />
+        {v > 0 && <path d={arc(0, Math.max(v, 0.5))} stroke={color} strokeWidth={stroke} fill="none" />}
+        {Array.from({ length: 11 }, (_, i) => { const [x1, y1] = pt(i * 10, r + stroke / 2 + 1); const [x2, y2] = pt(i * 10, r + stroke / 2 - (i % 5 ? 3 : 6)); return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--surface)" strokeWidth={i % 5 ? 1.5 : 2.5} />; })}
+        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--text)" strokeWidth={Math.max(2, size / 40)} strokeLinecap="round" />
+        <circle cx={cx} cy={cy} r={Math.max(3, size / 22)} fill="var(--text)" />
       </svg>
-      <div className="ring-label" style={{ fontSize: size / 4.6 }}>
-        <div>{f.num(v, v < 10 ? 1 : 0)}%{label && <small>{label}</small>}</div>
-      </div>
+      <div className="gauge-label"><b style={{ fontSize: Math.max(15, size / 4.4) }}>{f.num(v, v < 10 && v > 0 ? 1 : 0)}<i>%</i></b>{label && <small>{label}</small>}</div>
     </div>
   );
 }
 
 export function Kpi({ icon: I, label, value, unit, sub, tone }) {
   return (
-    <div className={`card kpi tone-${tone || 'primary'}`}>
+    <div className={`card kpi placa tone-${tone || 'primary'}`}>
       {I && <div className="kpi-icon"><I size={24} /></div>}
       <div className="grow">
         <div className="kpi-label">{label}</div>
@@ -96,6 +101,25 @@ export function PhaseList({ fases, compact, onClick }) {
         );
       })}
     </div>
+  );
+}
+
+/** Línea de producción: las fases como estaciones de una cadena */
+export function LineaProduccion({ fases, compact }) {
+  return (
+    <ol className={`linea ${compact ? 'compact' : ''}`} aria-label="Avance por fases">
+      {fases.map((x) => {
+        const tone = toneOf(x.estado);
+        const I = ICONO_FASE[x.clave] || PerfilH;
+        return (
+          <li key={x.id} className={`estacion ${tone}`} title={`${x.orden}. ${x.nombre}: ${f.pct(x.porcentaje)}`}>
+            <span className="est-caja"><span className="est-fill" style={{ height: `${Math.min(100, x.porcentaje)}%` }} /><I size={compact ? 16 : 20} /></span>
+            {!compact && <span className="est-nombre">{x.nombre.split(' ')[0]}</span>}
+            <span className="est-pct">{f.num(x.porcentaje)}%</span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -255,8 +279,8 @@ export function BarChart({ data, series, height = 220, format = (v) => f.tNum(v,
 }
 
 export const SERIES_FASES = [
-  { key: 'corte', label: 'Cortado', color: '#5b8fc7' },
-  { key: 'armado', label: 'Armado y soldado', color: '#2b5f8e' },
-  { key: 'pintura', label: 'Pintado', color: '#d97706' },
-  { key: 'montaje', label: 'Montado', color: '#15803d' },
+  { key: 'corte', label: 'Cortado', color: '#8e9aa6' },
+  { key: 'armado', label: 'Armado y soldado', color: 'var(--text)' },
+  { key: 'pintura', label: 'Pintado', color: '#e8a400' },
+  { key: 'montaje', label: 'Montado', color: 'var(--ok)' },
 ];

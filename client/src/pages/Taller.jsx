@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Clock, Save, Trash2, Users } from 'lucide-react';
+import { Save, Trash2 } from 'lucide-react';
+import { Soldadura as Clock, Cuadrilla as Users } from '../components/iconos.jsx';
 import { useApp, useData } from '../lib/app.jsx';
 import { get, post, del, qs } from '../lib/api.js';
 import { Loading, ErrorBox, Kpi, DataTable, Field, Seg } from '../components/ui.jsx';

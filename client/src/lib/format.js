@@ -50,4 +50,4 @@ export const ELEMENTOS = { pilar: 'Pilar', viga: 'Viga', cercha: 'Cercha', corre
 export const AMBITOS = { oficina: 'Oficina', taller: 'Taller', obra: 'Obra' };
 export const ROLES = { admin: 'Administrador', director: 'Director de producción', jefe_taller: 'Jefe de taller', encargado_montaje: 'Encargado de montaje', operario: 'Operario', administracion: 'Administración' };
 // Colores de fase (para barras apiladas de ubicación)
-export const COLOR_FASE = ['#94a3b8', '#7c8db5', '#5b8fc7', '#2b6cb0', '#0e7490', '#b45309', '#d97706', '#15803d', '#166534', '#475569', '#64748b'];
+export const COLOR_FASE = ['#c9c3b5', '#b0a998', '#8e9aa6', '#5f6a74', '#3c444b', '#e8a400', '#c25e00', '#7aa874', '#4d8a4f', '#6a6c6f', '#44474b'];

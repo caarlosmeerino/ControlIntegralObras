@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Pencil, LayoutDashboard, Package, ListOrdered, FolderOpen, HardHat, Euro, History, MapPin, Calendar, User, ArrowLeft } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Tabs, Ring, Status, PhaseList, UbicacionBar, Kpi, Empty, DataTable } from '../components/ui.jsx';
+import { Loading, ErrorBox, Tabs, Ring, Status, PhaseList, UbicacionBar, Kpi, Empty, DataTable, LineaProduccion } from '../components/ui.jsx';
 import { PiezasTabla } from '../components/Piezas.jsx';
 import { FasesObra } from '../components/Fases.jsx';
 import { ArchivosObra } from '../components/Archivos.jsx';
@@ -88,11 +88,13 @@ export default function ObraDetalle() {
           {can('obras.editar') && <button className="btn" onClick={() => setEdit(true)}><Pencil size={18} />Editar</button>}
         </div>
         <div className="divider" />
+        <LineaProduccion fases={r.fases} />
+        <div className="divider" />
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 10 }}>
           {INDICADORES.map(([k, l]) => (
-            <div key={k} style={{ padding: '8px 10px', borderRadius: 10, background: 'var(--surface-2)' }}>
+            <div key={k} style={{ padding: '8px 12px', background: 'var(--surface-2)', borderLeft: '4px solid var(--text)' }}>
               <div className="xs muted strong" style={{ textTransform: 'uppercase', letterSpacing: '.04em' }}>{l}</div>
-              <div className="strong num" style={{ fontSize: '1.15rem' }}>{r.toneladas[k] == null ? '—' : f.t(r.toneladas[k])}</div>
+              <div className="strong num mono" style={{ fontSize: '1.1rem' }}>{r.toneladas[k] == null ? '—' : f.t(r.toneladas[k])}</div>
             </div>
           ))}
         </div>
