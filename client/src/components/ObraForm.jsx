@@ -3,6 +3,7 @@ import { useApp } from '../lib/app.jsx';
 import { post, put } from '../lib/api.js';
 import { Sheet, Field, Selector } from './ui.jsx';
 import * as f from '../lib/format.js';
+import ClientePicker from './ClientePicker.jsx';
 
 const toKg = (v) => { const n = f.parseNum(v); return n == null ? 0 : n * 1000; };
 const toT = (kg) => (kg ? String(Number(kg) / 1000).replace('.', ',') : '');
@@ -32,10 +33,7 @@ export default function ObraForm({ obra, clientes = [], cliente = '', onClose, o
       footer={<><button className="btn" onClick={onClose}>Cancelar</button><button className="btn primary" disabled={busy} onClick={guardar}>{obra ? 'Guardar' : 'Crear proyecto'}</button></>}>
       <form className="form-grid" onSubmit={guardar}>
         <Field label="Nombre del proyecto" full><input className="input" value={d.nombre} onChange={s('nombre')} placeholder="Ej.: Nave industrial Plaza" autoFocus={!obra} /></Field>
-        <Field label="Cliente">
-          <input className="input" list="lista-clientes" value={d.cliente} onChange={s('cliente')} placeholder="Nombre del cliente" />
-          <datalist id="lista-clientes">{clientes.map((c) => <option key={c} value={c} />)}</datalist>
-        </Field>
+        <Field label="Cliente"><ClientePicker value={d.cliente} onChange={(c) => setD({ ...d, cliente: c })} /></Field>
         <Field label="Ciudad"><input className="input" value={d.ciudad} onChange={s('ciudad')} placeholder="Ej.: Zaragoza" /></Field>
         <Field label="Dirección de montaje" full><input className="input" value={d.direccion} onChange={s('direccion')} /></Field>
         <Field label="Inicio"><input type="date" className="input" value={d.fecha_inicio || ''} onChange={s('fecha_inicio')} /></Field>

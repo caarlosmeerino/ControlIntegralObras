@@ -4,7 +4,8 @@ import { Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { Loading, ErrorBox, Empty, Status, Bar, Selector } from '../components/ui.jsx';
 import ObraForm from '../components/ObraForm.jsx';
-import { ACTIVAS, avanceGrupo, iniciales } from '../lib/obra.js';
+import { ACTIVAS, avanceGrupo } from '../lib/obra.js';
+import { AvatarCliente } from '../components/ClientePicker.jsx';
 import * as f from '../lib/format.js';
 
 /** Fila de proyecto con avance de fabricación y de montaje */
@@ -47,7 +48,7 @@ export default function Cliente() {
       <Link to="/" className="volver"><ChevronLeft size={20} />Proyectos</Link>
       <div className="page-head">
         <div className="row" style={{ gap: 16 }}>
-          <span className="avatar-cliente grande">{iniciales(cliente)}</span>
+          <AvatarCliente nombre={cliente} size={64} />
           <div><h1>{cliente}</h1><p>{f.plural(todas.length, 'proyecto')}{ciudades.length ? ` · ${ciudades.join(', ')}` : ''}</p></div>
         </div>
         {can('obras.editar') && <button className="btn primary big" onClick={() => setNueva(true)}><Plus size={22} />Nuevo proyecto</button>}

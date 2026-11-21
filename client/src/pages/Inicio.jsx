@@ -6,7 +6,8 @@ import { Loading, ErrorBox, Empty, Selector } from '../components/ui.jsx';
 import { Lupa } from '../components/iconos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import { ProyectoFila } from './Cliente.jsx';
-import { ACTIVAS, iniciales, urlCliente } from '../lib/obra.js';
+import { ACTIVAS, urlCliente } from '../lib/obra.js';
+import { AvatarCliente } from '../components/ClientePicker.jsx';
 import * as f from '../lib/format.js';
 
 const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -66,7 +67,7 @@ export default function Inicio() {
               const retraso = c.obras.some((o) => o.resumen.retrasada);
               return (
                 <Link key={c.nombre} to={urlCliente(c.nombre)} className="lista-fila">
-                  <span className="avatar-cliente">{iniciales(c.nombre)}</span>
+                  <AvatarCliente nombre={c.nombre} size={44} />
                   <div className="grow">
                     <div className="lista-titulo">{c.nombre}</div>
                     <div className="lista-sub">{f.plural(c.obras.length, 'proyecto')}{activos ? ` · ${activos} en curso` : ''}{c.ciudades.size ? ` · ${[...c.ciudades].join(', ')}` : ''}</div>

@@ -132,7 +132,7 @@ export function UbicacionBar({ fases, totalKg }) {
 }
 
 let abiertas = 0;
-function bloquearScroll(d) { abiertas = Math.max(0, abiertas + d); document.body.style.overflow = abiertas ? 'hidden' : ''; }
+export function bloquearScroll(d) { abiertas = Math.max(0, abiertas + d); document.body.style.overflow = abiertas ? 'hidden' : ''; }
 
 export function Sheet({ title, onClose, children, footer, wide }) {
   useEffect(() => {
