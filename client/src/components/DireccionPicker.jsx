@@ -4,7 +4,7 @@ import { get, qs } from '../lib/api.js';
 import { bloquearScroll } from './ui.jsx';
 import { Lupa } from './iconos.jsx';
 
-const ICONO = { portal: Home, callejero: Route, carretera: Route, municipio: Building2, poblacion: Building2, toponimo: Store };
+const ICONO = { google: MapPin, portal: Home, callejero: Route, carretera: Route, municipio: Building2, poblacion: Building2, toponimo: Store };
 
 /**
  * Dirección de la obra con sugerencias oficiales (CartoCiudad · IGN).
@@ -38,6 +38,8 @@ function Hoja({ inicial, onClose, onElegir }) {
   const [error, setError] = useState('');
   const [eligiendo, setEligiendo] = useState(null);
   const ref = useRef();
+  // Token de sesión: Google cobra la búsqueda y la elección como una sola sesión
+  const sesion = useRef(globalThis.crypto?.randomUUID?.() || String(Math.random()).slice(2));
   useEffect(() => {
     const k = (e) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', k); bloquearScroll(1);
@@ -50,7 +52,7 @@ function Hoja({ inicial, onClose, onElegir }) {
     const ac = new AbortController();
     setCargando(true);
     const t = setTimeout(() => {
-      get(`/direcciones${qs({ q: texto })}`, { signal: ac.signal })
+      get(`/direcciones${qs({ q: texto, sesion: sesion.current })}`, { signal: ac.signal })
         .then((r) => { setRes(r); setError(''); })
         .catch((e) => { if (e.name !== 'AbortError') setError(e.message); })
         .finally(() => setCargando(false));
@@ -60,11 +62,14 @@ function Hoja({ inicial, onClose, onElegir }) {
 
   const elegir = async (x) => {
     setEligiendo(x.id);
-    let { lat, lng, codigo_postal } = x;
-    if (lat == null) {
-      try { const d = await get(`/direcciones/detalle${qs({ id: x.id, tipo: x.tipo, portal: x.portal })}`); lat = d.lat; lng = d.lng; codigo_postal = codigo_postal || d.codigo_postal; } catch { /* sin coordenadas */ }
+    let v = { direccion: x.direccion, ciudad: x.ciudad, provincia: x.provincia, codigo_postal: x.codigo_postal || '', lat: x.lat ?? null, lng: x.lng ?? null };
+    if (v.lat == null || x.proveedor === 'google') {
+      try {
+        const d = await get(`/direcciones/detalle${qs({ id: x.id, tipo: x.tipo, portal: x.portal, proveedor: x.proveedor, sesion: sesion.current })}`);
+        v = { ...v, ...Object.fromEntries(Object.entries(d).filter(([, val]) => val !== '' && val != null)) };
+      } catch (e) { if (x.proveedor === 'google') { setError(e.message); setEligiendo(null); return; } }
     }
-    onElegir({ direccion: x.direccion, ciudad: x.ciudad, provincia: x.provincia, codigo_postal: codigo_postal || '', lat: lat ?? null, lng: lng ?? null });
+    onElegir(v);
   };
   const manual = q.trim();
 
@@ -96,7 +101,7 @@ function Hoja({ inicial, onClose, onElegir }) {
                         <span className="pin-circulo grande" style={x.tipo === 'portal' ? undefined : { background: 'linear-gradient(180deg,#8e8e93,#636366)' }}><I size={18} /></span>
                         <span className="grow" style={{ minWidth: 0 }}>
                           <span className="picker-nombre">{x.tipo === 'toponimo' ? x.texto : (x.direccion || x.ciudad)}</span>
-                          <span className="picker-sub">{x.tipo === 'toponimo' ? `${x.direccion} · ` : ''}{[x.codigo_postal, x.ciudad, x.provincia !== x.ciudad && x.provincia].filter(Boolean).join(' · ')}</span>
+                          <span className="picker-sub">{x.proveedor === 'google' ? x.secundario : <>{x.tipo === 'toponimo' ? `${x.direccion} · ` : ''}{[x.codigo_postal, x.ciudad, x.provincia !== x.ciudad && x.provincia].filter(Boolean).join(' · ')}</>}</span>
                         </span>
                         {eligiendo === x.id && <span className="spinner" style={{ width: 18, height: 18, margin: 0, borderWidth: 2 }} />}
                       </button>
@@ -114,7 +119,7 @@ function Hoja({ inicial, onClose, onElegir }) {
                   </button>
                 </div>
               )}
-              <div className="xs muted center mt">Direcciones oficiales de CartoCiudad · Instituto Geográfico Nacional</div>
+              <div className="xs muted center mt">{res.some((x) => x.proveedor === 'google') ? 'Sugerencias de Google Maps · con tecnología de Google' : 'Direcciones oficiales de CartoCiudad · Instituto Geográfico Nacional'}</div>
             </>
           )}
         </div>

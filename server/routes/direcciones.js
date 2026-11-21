@@ -1,4 +1,5 @@
-// Buscador de direcciones de España con CartoCiudad (Instituto Geográfico Nacional).
+// Buscador de direcciones: Google Maps (Places API) si hay GOOGLE_MAPS_API_KEY;
+// si no, CartoCiudad (Instituto Geográfico Nacional).
 // El servidor hace de intermediario: el navegador solo habla con la propia app.
 import { Router } from 'express';
 import { wrap, bad, HttpError } from '../http.js';
@@ -67,11 +68,74 @@ function convertir(c) {
   };
 }
 
+// ---------- Google Maps (Places API) ----------
+// Si existe GOOGLE_MAPS_API_KEY, las sugerencias salen de Google Maps.
+const GKEY = process.env.GOOGLE_MAPS_API_KEY || '';
+export const usaGoogle = () => !!GKEY;
+
+async function google(ruta, { body, campos, sesion } = {}) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 7000);
+  try {
+    const url = `https://places.googleapis.com/v1/${ruta}${!body && sesion ? `${ruta.includes('?') ? '&' : '?'}sessionToken=${encodeURIComponent(sesion)}` : ''}`;
+    const res = await fetch(url, {
+      method: body ? 'POST' : 'GET', signal: ctrl.signal,
+      headers: { 'X-Goog-Api-Key': GKEY, 'Content-Type': 'application/json', ...(campos ? { 'X-Goog-FieldMask': campos } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.warn('[google]', res.status, data?.error?.message || '');
+      throw new Error(`Google ${res.status}`);
+    }
+    return data;
+  } catch {
+    throw new HttpError(503, 'Google Maps no responde ahora mismo. Puedes escribir la dirección a mano.');
+  } finally { clearTimeout(t); }
+}
+
+async function sugerenciasGoogle(q, sesion) {
+  const data = await google('places:autocomplete', {
+    sesion,
+    body: { input: q, languageCode: 'es', regionCode: 'es', includedRegionCodes: ['es'], ...(sesion ? { sessionToken: sesion } : {}) },
+  });
+  return (data.suggestions || []).map((x) => x.placePrediction).filter(Boolean).map((pp) => ({
+    id: pp.placeId, tipo: (pp.types || []).includes('street_address') || (pp.types || []).includes('premise') ? 'portal' : (pp.types || []).includes('route') ? 'callejero' : (pp.types || []).includes('locality') ? 'municipio' : 'toponimo',
+    proveedor: 'google',
+    texto: pp.structuredFormat?.mainText?.text || pp.text?.text || '',
+    direccion: pp.structuredFormat?.mainText?.text || pp.text?.text || '',
+    secundario: pp.structuredFormat?.secondaryText?.text || '',
+    ciudad: '', provincia: '', codigo_postal: '', lat: null, lng: null,
+  }));
+}
+
+async function detalleGoogle(id, sesion) {
+  const p = await google(`places/${encodeURIComponent(id)}?languageCode=es&regionCode=es`, {
+    sesion, campos: 'id,displayName,formattedAddress,addressComponents,location,types',
+  });
+  const comp = (tipo) => (p.addressComponents || []).find((c) => (c.types || []).includes(tipo));
+  const calle = comp('route')?.longText || '';
+  const numero = comp('street_number')?.longText || '';
+  const localidad = comp('locality')?.longText || comp('administrative_area_level_4')?.longText || comp('administrative_area_level_3')?.longText || comp('postal_town')?.longText || '';
+  const prov = comp('administrative_area_level_2')?.longText || '';
+  let ciudad = localidad; let provincia = prov;
+  try { const m = resolverCiudad(localidad, prov); ciudad = m.ciudad; provincia = m.provincia; } catch { /* se deja el nombre de Google */ }
+  const esLugar = !(p.types || []).some((t) => ['street_address', 'route', 'premise', 'subpremise', 'locality', 'political'].includes(t));
+  let direccion = calle ? `${calle}${numero ? `, ${numero}` : ''}` : '';
+  if (esLugar && p.displayName?.text) direccion = direccion ? `${p.displayName.text} · ${direccion}` : p.displayName.text;
+  if (!direccion && !(p.types || []).includes('locality')) direccion = String(p.formattedAddress || '').split(',')[0];
+  return {
+    direccion, ciudad, provincia, codigo_postal: comp('postal_code')?.longText || '',
+    lat: p.location?.latitude ?? null, lng: p.location?.longitude ?? null,
+  };
+}
+
 // Sugerencias mientras se escribe
 r.get('/', wrap(async (req, res) => {
   const q = String(req.query.q || '').trim();
   if (q.length < 3) return res.json([]);
   if (q.length > 200) throw bad('La búsqueda es demasiado larga.');
+  if (usaGoogle()) return res.json((await sugerenciasGoogle(q, String(req.query.sesion || '').slice(0, 64))).slice(0, 8));
   const data = await pedir(`/candidates?q=${encodeURIComponent(q)}&limit=12`);
   const vistos = new Set();
   const out = [];
@@ -89,6 +153,10 @@ r.get('/', wrap(async (req, res) => {
 r.get('/detalle', wrap(async (req, res) => {
   const { id, tipo, portal } = req.query;
   if (!id || !tipo) throw bad('Falta la dirección elegida.');
+  if (req.query.proveedor === 'google') {
+    if (!usaGoogle()) throw bad('Google Maps no está configurado.');
+    return res.json(await detalleGoogle(String(id), String(req.query.sesion || '').slice(0, 64)));
+  }
   const ruta = `/find?id=${encodeURIComponent(id)}&type=${encodeURIComponent(tipo)}${portal ? `&portal=${encodeURIComponent(portal)}` : ''}`;
   const c = await pedir(ruta);
   let lat = Number(c?.lat) || null; let lng = Number(c?.lng) || null;
