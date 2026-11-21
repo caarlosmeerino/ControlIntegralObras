@@ -24,6 +24,7 @@ import archivosR from './routes/archivos.js';
 import costesR from './routes/costes.js';
 import informesR from './routes/informes.js';
 import sistemaR from './routes/sistema.js';
+import direccionesR from './routes/direcciones.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -57,6 +58,7 @@ app.use('/api/archivos', archivosR);
 app.use('/api/costes', costesR);
 app.use('/api/informes', informesR);
 app.use('/api/sistema', sistemaR);
+app.use('/api/direcciones', direccionesR);
 app.use('/api', panelR);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 app.use(errorHandler);

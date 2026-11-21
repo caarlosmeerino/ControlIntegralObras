@@ -9,12 +9,14 @@ const archivo = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'c
 const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9ñ]+/g, ' ').trim();
 
 let indice = null;
+const porCod = new Map();
 function cargar() {
   if (indice) return indice;
   const d = JSON.parse(fs.readFileSync(archivo, 'utf8'));
   indice = new Map();
-  for (const [nombre, p, alias] of d.municipios) {
+  for (const [nombre, p, alias, codigo] of d.municipios) {
     const item = { ciudad: nombre, provincia: d.provincias[p][0] };
+    if (codigo) porCod.set(codigo, item);
     for (const clave of [nombre, alias].filter(Boolean)) {
       const k = norm(clave);
       (indice.get(k) || indice.set(k, []).get(k)).push(item);
@@ -22,6 +24,9 @@ function cargar() {
   }
   return indice;
 }
+
+/** Municipio por su código INE de 5 cifras */
+export function porCodigo(codigo) { cargar(); return porCod.get(String(codigo || '').padStart(5, '0')) || null; }
 
 /** Devuelve { ciudad, provincia } oficiales o lanza un error claro si no existe. Vacío = sin ciudad. */
 export function resolverCiudad(ciudad, provincia = '') {

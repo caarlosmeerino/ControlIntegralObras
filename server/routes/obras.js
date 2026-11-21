@@ -22,6 +22,9 @@ function leerObra(b) {
     kg_previstos_montaje: num(b.kg_previstos_montaje, 'peso previsto de montaje (kg)', { min: 0, def: 0 }),
     m2_previstos: num(b.m2_previstos, 'superficie (m²)', { min: 0, def: 0 }),
     ml_previstos: num(b.ml_previstos, 'longitud (ml)', { min: 0, def: 0 }),
+    codigo_postal: str(b.codigo_postal, 'código postal', { max: 10 }),
+    lat: b.lat === null || b.lat === '' || b.lat === undefined ? null : num(b.lat, 'latitud', { min: 25, max: 45 }),
+    lng: b.lng === null || b.lng === '' || b.lng === undefined ? null : num(b.lng, 'longitud', { min: -20, max: 6 }),
     estado: oneOf(b.estado, 'estado', ESTADOS, 'planificada'),
     observaciones: str(b.observaciones, 'observaciones', { max: 5000 }),
   };
@@ -51,7 +54,7 @@ async function guardarEtapas(db, obraId, etapas) {
 }
 
 const COLS = ['codigo', 'nombre', 'cliente', 'direccion', 'ciudad', 'provincia', 'responsable_id', 'kg_contratados', 'kg_previstos_fab',
-  'kg_previstos_montaje', 'm2_previstos', 'ml_previstos', 'estado', 'observaciones'];
+  'kg_previstos_montaje', 'm2_previstos', 'ml_previstos', 'codigo_postal', 'lat', 'lng', 'estado', 'observaciones'];
 
 r.get('/', requirePerm('obras.ver'), wrap(async (req, res) => {
   let obras = await resumenObras({ query: q });

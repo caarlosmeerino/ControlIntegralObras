@@ -109,7 +109,7 @@ export default function ObraDetalle() {
                 <dd>
                   {hayUbicacion ? (
                     <a className="enlace-mapa" href={f.mapsUrl(o)} target="_blank" rel="noopener noreferrer">
-                      <MapPin size={16} /><span>{[o.direccion, o.ciudad, o.provincia && o.provincia !== o.ciudad ? o.provincia : ''].filter(Boolean).join(', ')}</span>
+                      <MapPin size={16} /><span>{[o.direccion, [o.codigo_postal, o.ciudad].filter(Boolean).join(' '), o.provincia && o.provincia !== o.ciudad ? o.provincia : ''].filter(Boolean).join(', ')}</span>
                     </a>
                   ) : '—'}
                 </dd>

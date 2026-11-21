@@ -55,6 +55,8 @@ export const m2 = (v) => (v == null ? '—' : `${nf(0, 2).format(Number(v))} m²
 export const ml = (v) => (v == null ? '—' : `${nf(0, 2).format(Number(v))} ml`);
 /** Enlace a Google Maps con la dirección completa */
 export const mapsUrl = (o) => {
+  // Con coordenadas (dirección elegida del callejero) el punto es exacto
+  if (o.lat != null && o.lng != null) return `https://www.google.com/maps/search/?api=1&query=${o.lat},${o.lng}`;
   const q = [o.direccion, o.ciudad, o.provincia && o.provincia !== o.ciudad ? o.provincia : '', 'España'].filter(Boolean).join(', ');
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 };
