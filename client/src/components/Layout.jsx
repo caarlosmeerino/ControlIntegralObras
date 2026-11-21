@@ -39,7 +39,6 @@ export default function Layout() {
           opciones={[
             { value: 'perfil', label: 'Mi cuenta y contraseña', icon: Ic.Operario, onClick: () => nav('/perfil') },
             { value: 'tema', label: oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro', icon: oscuro ? Ic.Sol : Ic.Luna, onClick: () => setTema(oscuro ? 'light' : 'dark') },
-            ...(can('usuarios.admin') ? [{ value: 'usuarios', label: 'Usuarios y permisos', icon: Ic.Llave, onClick: () => nav('/usuarios') }] : []),
             ...(can('sistema.admin') ? [{ value: 'sistema', label: 'Copias de seguridad', icon: Ic.Archivo, onClick: () => nav('/sistema') }] : []),
             { value: 'salir', label: 'Cerrar sesión', icon: Ic.Salir, danger: true, onClick: logout },
           ]} />

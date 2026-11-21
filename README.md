@@ -57,7 +57,7 @@ npm run seed           # migra la base de datos y carga los datos de ejemplo
 npm run dev            # API en :3000 y Vite en :5173
 ```
 
-Entra en http://localhost:5173 con `admin` / `admin1234`. Hay también un usuario de ejemplo por perfil (`director`, `taller`, `montaje`, `operario`, `oficina`), todos con la contraseña `Demo2026!`.
+Entra en http://localhost:5173 con `admin` / `admin1234`. La aplicación funciona con un único usuario administrador; los datos de ejemplo no crean usuarios.
 
 | Comando | Qué hace |
 |---|---|

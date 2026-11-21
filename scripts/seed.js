@@ -2,12 +2,10 @@
 //   npm run seed              → obra de prueba + datos de demostración
 //   npm run seed -- --prueba  → solo la obra de prueba (P-01, P-02, V-01, V-02, C-01)
 //   npm run seed -- --reset   → BORRA todos los datos y vuelve a cargar
-import bcrypt from 'bcryptjs';
 import { pool, tx } from '../server/db.js';
 import { migrate } from '../server/migrate.js';
 import { crearFasesPorDefecto, completarHasta, hoy } from '../server/services/produccion.js';
 
-const PASS = process.env.SEED_PASSWORD || 'Demo2026!';
 
 const diasAtras = (n, h = 9) => { const d = new Date(hoy() + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - n); d.setUTCHours(h, 15); return d.toISOString(); };
 const fecha = (n) => diasAtras(n).slice(0, 10);
@@ -26,19 +24,11 @@ export async function sembrar({ soloPrueba = false, reset = false, log = console
   if (existe) { console.log('La obra OB-PRUEBA ya existe. Usa --reset para recargar.'); return; }
 
   await tx(async (db) => {
-    // ---------- Usuarios (uno por perfil) ----------
-    const hash = await bcrypt.hash(PASS, 10);
-    const usuarios = [
-      ['director', 'Laura Gómez', 'director'], ['taller', 'Miguel Ángel Ruiz', 'jefe_taller'], ['montaje', 'Javier Ortega', 'encargado_montaje'],
-      ['operario', 'Antonio Pérez', 'operario'], ['oficina', 'Carmen Navarro', 'administracion'],
-    ];
-    const U = {};
-    for (const [u, n, r] of usuarios) {
-      const { rows: [x] } = await db.query(`INSERT INTO usuarios (username, password_hash, nombre, rol) VALUES ($1,$2,$3,$4)
-        ON CONFLICT (username) DO UPDATE SET nombre=EXCLUDED.nombre RETURNING id`, [u, hash, n, r]);
-      U[u] = { id: x.id, rol: r };
-    }
-    const sys = { id: U.director.id, rol: 'admin' };
+    // ---------- Un único usuario: el administrador ----------
+    const { rows: [adm] } = await db.query("SELECT id FROM usuarios WHERE rol='admin' AND activo ORDER BY id LIMIT 1");
+    const A = adm?.id ?? null;
+    const U = { director: { id: A }, taller: { id: A }, montaje: { id: A }, oficina: { id: A }, operario: { id: null } };
+    const sys = { id: A, rol: 'admin' };
 
     // ---------- OBRA DE PRUEBA (comprobación de cálculos) ----------
     const { rows: [ob] } = await db.query(
@@ -76,11 +66,11 @@ export async function sembrar({ soloPrueba = false, reset = false, log = console
       eq[n] = (await db.query('INSERT INTO equipos (nombre, seccion) VALUES ($1,$2) RETURNING id', [n, s])).rows[0].id;
     }
     const trab = [
-      ['Antonio Pérez', 'corte', 'Oficial 1ª', 24, 'Corte 1', ['corte'], U.operario.id], ['Luis Martín', 'corte', 'Oficial 2ª', 21, 'Corte 1', ['corte'], null],
+      ['Antonio Pérez', 'corte', 'Oficial 1ª', 24, 'Corte 1', ['corte'], null], ['Luis Martín', 'corte', 'Oficial 2ª', 21, 'Corte 1', ['corte'], null],
       ['Rafael Sánchez', 'armado', 'Oficial 1ª', 25, 'Armado A', ['armado'], null], ['Pedro Jiménez', 'armado', 'Oficial 1ª', 25, 'Armado A', ['armado', 'calidad'], null],
       ['Sergio López', 'soldadura', 'Soldador homologado', 28, 'Soldadura A', ['armado'], null], ['David Moreno', 'soldadura', 'Soldador homologado', 28, 'Soldadura A', ['armado'], null],
       ['Iván Romero', 'pintura', 'Pintor industrial', 22, 'Pintura', ['pintura'], null], ['Óscar Gil', 'pintura', 'Peón especialista', 19, 'Pintura', ['pintura', 'expedicion'], null],
-      ['Javier Ortega', 'montaje', 'Encargado', 30, 'Cuadrilla montaje 1', ['montaje'], U.montaje.id], ['Raúl Castro', 'montaje', 'Montador', 26, 'Cuadrilla montaje 1', ['montaje'], null],
+      ['Javier Ortega', 'montaje', 'Encargado', 30, 'Cuadrilla montaje 1', ['montaje'], null], ['Raúl Castro', 'montaje', 'Montador', 26, 'Cuadrilla montaje 1', ['montaje'], null],
       ['Marcos Vidal', 'montaje', 'Montador', 26, 'Cuadrilla montaje 1', ['montaje'], null], ['Jorge Serrano', 'montaje', 'Montador', 26, 'Cuadrilla montaje 2', ['montaje'], null],
       ['Elena Prieto', 'calidad', 'Inspectora de calidad', 27, null, ['calidad'], null],
     ];
@@ -186,7 +176,6 @@ export async function sembrar({ soloPrueba = false, reset = false, log = console
     }
     await db.query(`UPDATE obras SET ciudad = trim(split_part(direccion, ',', array_length(string_to_array(direccion, ','), 1))) WHERE ciudad = ''`);
     console.log('· Datos de demostración: 3 obras, 13 trabajadores, 6 equipos, 4 medios, partes de horas y de montaje');
-    console.log(`· Usuarios de ejemplo (contraseña ${PASS}): director, taller, montaje, operario, oficina`);
   });
 }
 
