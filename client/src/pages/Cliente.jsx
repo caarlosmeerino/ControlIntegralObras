@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Seg, Empty, Status, Bar } from '../components/ui.jsx';
+import { Loading, ErrorBox, Empty, Status, Bar, Selector } from '../components/ui.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import { ACTIVAS, avanceGrupo, iniciales } from '../lib/obra.js';
 import * as f from '../lib/format.js';
@@ -52,7 +52,7 @@ export default function Cliente() {
         </div>
         {can('obras.editar') && <button className="btn primary big" onClick={() => setNueva(true)}><Plus size={22} />Nuevo proyecto</button>}
       </div>
-      <div className="mb"><Seg value={estado} onChange={setEstado} options={[['curso', 'En curso'], ['terminadas', 'Terminados'], ['todas', 'Todos']]} /></div>
+      <div className="mb"><Selector filtro titulo="Mostrar proyectos" value={estado} onChange={setEstado} options={[['curso', 'En curso'], ['terminadas', 'Terminados'], ['todas', 'Todos']]} /></div>
       {lista.length ? <div className="lista">{lista.map((o) => <ProyectoFila key={o.id} o={o} />)}</div> : <Empty title="No hay proyectos en este filtro" />}
       {nueva && <ObraForm cliente={cliente === 'Sin cliente' ? '' : cliente} clientes={[...new Set(data.map((o) => o.cliente).filter(Boolean))]} onClose={() => setNueva(false)} onSaved={(o) => nav(`/obras/${o.id}`)} />}
     </>

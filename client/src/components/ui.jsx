@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, CheckCircle2, Clock, AlertOctagon, Circle, Inbox, AlertTriangle, RefreshCw, Minus, Plus } from 'lucide-react';
+import { X, CheckCircle2, Clock, AlertOctagon, Circle, Inbox, AlertTriangle, RefreshCw, Minus, Plus, Check, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import * as f from '../lib/format.js';
 
 export const Loading = () => <div className="spinner" role="status" aria-label="Cargando" />;
@@ -131,12 +131,15 @@ export function UbicacionBar({ fases, totalKg }) {
   );
 }
 
+let abiertas = 0;
+function bloquearScroll(d) { abiertas = Math.max(0, abiertas + d); document.body.style.overflow = abiertas ? 'hidden' : ''; }
+
 export function Sheet({ title, onClose, children, footer, wide }) {
   useEffect(() => {
     const k = (e) => e.key === 'Escape' && onClose?.();
     document.addEventListener('keydown', k);
-    document.body.style.overflow = 'hidden';
-    return () => { document.removeEventListener('keydown', k); document.body.style.overflow = ''; };
+    bloquearScroll(1);
+    return () => { document.removeEventListener('keydown', k); bloquearScroll(-1); };
   }, [onClose]);
   return (
     <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
@@ -275,3 +278,50 @@ export const SERIES_FASES = [
   { key: 'pintura', label: 'Pintado', color: '#ff9f0a' },
   { key: 'montaje', label: 'Montado', color: '#30d158' },
 ];
+
+/** Tarjeta de opciones que sube desde abajo (como las hojas de acción de iOS) */
+export function ActionSheet({ titulo, opciones, valor, onSelect, onClose }) {
+  useEffect(() => {
+    const k = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', k); bloquearScroll(1);
+    return () => { document.removeEventListener('keydown', k); bloquearScroll(-1); };
+  }, [onClose]);
+  return (
+    <div className="overlay overlay-acciones" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="acciones" role="dialog" aria-modal="true" aria-label={typeof titulo === 'string' ? titulo : 'Opciones'}>
+        <div className="acciones-grupo">
+          {titulo && <div className="acciones-titulo">{titulo}</div>}
+          {opciones.map((o) => {
+            const I = o.icon;
+            return (
+              <button key={String(o.value)} type="button" className={`accion ${o.danger ? 'peligro' : ''} ${o.value === valor ? 'on' : ''}`} disabled={o.disabled}
+                onClick={() => { onClose(); onSelect?.(o.value); o.onClick?.(); }}>
+                {I && <span className="accion-icono"><I size={20} /></span>}
+                <span className="grow"><span className="accion-label">{o.label}</span>{o.sub && <span className="accion-sub">{o.sub}</span>}</span>
+                {o.value === valor && <Check size={20} className="accion-check" />}
+              </button>
+            );
+          })}
+        </div>
+        <button type="button" className="acciones-cancelar" onClick={onClose}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
+
+/** Botón que muestra la opción elegida y abre la tarjeta de opciones (sustituye a los desplegables) */
+export function Selector({ value, options, onChange, titulo, placeholder = 'Elegir…', filtro, disabled, ariaLabel }) {
+  const [open, setOpen] = useState(false);
+  const opts = options.map((o) => (Array.isArray(o) ? { value: o[0], label: o[1] } : o));
+  const sel = opts.find((o) => String(o.value) === String(value));
+  return (
+    <>
+      <button type="button" className={filtro ? 'filtro-btn' : 'input selector'} onClick={() => setOpen(true)} disabled={disabled} aria-label={ariaLabel || titulo} aria-haspopup="dialog">
+        {filtro && <SlidersHorizontal size={16} />}
+        <span className={`grow ${sel ? '' : 'muted'}`}>{sel ? sel.label : placeholder}</span>
+        <ChevronDown size={18} className="muted" />
+      </button>
+      {open && <ActionSheet titulo={titulo} opciones={opts} valor={sel?.value} onSelect={onChange} onClose={() => setOpen(false)} />}
+    </>
+  );
+}

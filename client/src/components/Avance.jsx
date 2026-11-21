@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Undo2, ArrowRight } from 'lucide-react';
-import { Sheet, Stepper, Field, Seg } from './ui.jsx';
+import { Sheet, Stepper, Field, Selector } from './ui.jsx';
 import { useApp } from '../lib/app.jsx';
 import { get, registrarAvance } from '../lib/api.js';
 import * as f from '../lib/format.js';
@@ -60,7 +60,7 @@ export function AvanceSheet({ pieza, onClose, onDone, origen = 'web', ambitos = 
       </>}>
       <div className="stack">
         <div className="small muted">{pieza.obra_codigo} · {f.ELEMENTOS[pieza.elemento]} {pieza.perfil} · {pieza.cantidad} ud × {f.kg(pieza.peso_unitario_kg)}</div>
-        {puedeCorregir && <Seg value={modo} onChange={(m) => { setModo(m); setCant(1); }} options={[['avanzar', 'Avanzar'], ['corregir', 'Corregir error']]} />}
+        {puedeCorregir && <Selector titulo="¿Qué quieres hacer?" value={modo} onChange={(m) => { setModo(m); setCant(1); }} options={[{ value: 'avanzar', label: 'Registrar avance' }, { value: 'corregir', label: 'Corregir un error', sub: 'Quita unidades registradas por equivocación' }]} />}
         {modo === 'avanzar' ? (
           <>
             {!abiertas.length ? <div className="banner ok"><CheckCircle2 />Esta pieza ha completado todas las fases.</div> : (
@@ -79,10 +79,7 @@ export function AvanceSheet({ pieza, onClose, onDone, origen = 'web', ambitos = 
             {disp > 1 && <Field label="Unidades completadas"><Stepper value={cant} onChange={setCant} min={1} max={disp} /></Field>}
             {candidatos.length > 0 && (
               <Field label="Realizado por" hint="Sirve para calcular el rendimiento de cada trabajador.">
-                <select className="input" value={trab} onChange={(e) => setTrab(e.target.value)}>
-                  <option value="">— Sin indicar —</option>
-                  {candidatos.map((t) => <option key={t.id} value={t.id}>{t.nombre} · {f.SECCIONES[t.seccion]}</option>)}
-                </select>
+                <Selector titulo="¿Quién lo ha hecho?" value={trab} onChange={setTrab} options={[{ value: '', label: 'Sin indicar' }, ...candidatos.map((t) => ({ value: t.id, label: t.nombre, sub: f.SECCIONES[t.seccion] }))]} />
               </Field>
             )}
           </>
@@ -90,9 +87,7 @@ export function AvanceSheet({ pieza, onClose, onDone, origen = 'web', ambitos = 
           <>
             <div className="banner">Usa esta opción solo para corregir un error de registro. Queda anotado en el historial.</div>
             <Field label="Fase a corregir">
-              <select className="input" value={faseCorr} onChange={(e) => { setFaseCorr(e.target.value); setCant(1); }}>
-                {pieza.avance.filter((a) => a.completadas > 0).map((a) => <option key={a.fase_id} value={a.fase_id}>{a.orden}. {a.nombre} ({a.completadas} completadas)</option>)}
-              </select>
+              <Selector titulo="Fase a corregir" value={faseCorr} onChange={(v) => { setFaseCorr(v); setCant(1); }} options={pieza.avance.filter((a) => a.completadas > 0).map((a) => ({ value: a.fase_id, label: `${a.orden}. ${a.nombre}`, sub: `${a.completadas} completadas` }))} />
             </Field>
             {maxCorr < 1 ? <div className="banner bad">No se puede corregir esta fase: hay unidades en la fase siguiente. Corrige primero la última fase.</div>
               : <Field label="Unidades a quitar"><Stepper value={cant} onChange={setCant} min={1} max={maxCorr} /></Field>}

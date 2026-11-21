@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Plus, ChevronRight } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Seg, Empty } from '../components/ui.jsx';
+import { Loading, ErrorBox, Empty, Selector } from '../components/ui.jsx';
 import { Lupa } from '../components/iconos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import { ProyectoFila } from './Cliente.jsx';
@@ -47,7 +47,7 @@ export default function Inicio() {
         <div className="search busqueda-grande"><Lupa size={20} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar cliente, ciudad o proyecto" aria-label="Buscar cliente, ciudad o proyecto" type="search" />
         </div>
-        <Seg value={estado} onChange={setEstado} options={[['curso', 'En curso'], ['terminadas', 'Terminados'], ['todas', 'Todos']]} />
+        <Selector filtro titulo="Mostrar proyectos" value={estado} onChange={setEstado} options={[['curso', 'En curso'], ['terminadas', 'Terminados'], ['todas', 'Todos']]} />
       </div>
 
       {t && (

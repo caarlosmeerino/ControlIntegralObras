@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Upload, AlertTriangle } from 'lucide-react';
 import { useApp } from '../lib/app.jsx';
-import { DataTable, Bar, Seg, Kpi } from './ui.jsx';
+import { DataTable, Bar, Kpi, Selector } from './ui.jsx';
 import { Lupa } from './iconos.jsx';
 import { AvanceSheet, BotonAvance } from './Avance.jsx';
 import { PiezaForm, ImportSheet } from './Piezas.jsx';
@@ -80,7 +80,7 @@ export default function Despiece({ modo, piezas, obraId, reload }) {
       </div>
       <div className="row wrap">
         <div className="search" style={{ maxWidth: 320 }}><Lupa size={20} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Marca, perfil o plano" aria-label="Buscar pieza" type="search" /></div>
-        <Seg value={filtro} onChange={setFiltro} options={[['pendientes', 'Pendientes'], ['hechas', fab ? 'Fabricadas' : 'Montadas'], ['todas', 'Todas']]} />
+        <Selector filtro titulo="Mostrar piezas" value={filtro} onChange={setFiltro} options={[['pendientes', 'Pendientes'], ['hechas', fab ? 'Fabricadas' : 'Montadas'], ['todas', 'Todas']]} />
         <span className="grow" />
         {fab && can('piezas.editar') && <>
           <button className="btn" onClick={() => setImp(true)}><Upload size={18} />Importar despiece</button>

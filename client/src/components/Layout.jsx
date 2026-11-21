@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { ActionSheet } from './ui.jsx';
 import { WifiOff } from 'lucide-react';
 import * as Ic from './iconos.jsx';
 import { useApp } from '../lib/app.jsx';
@@ -10,6 +11,7 @@ export default function Layout() {
   const { user, can, logout, tema, setTema, online, cola } = useApp();
   const loc = useLocation();
   const [menu, setMenu] = useState(false);
+  const nav = useNavigate();
   useEffect(() => { setMenu(false); window.scrollTo(0, 0); }, [loc.pathname]);
   const oscuro = tema === 'dark' || (tema === 'auto' && window.matchMedia?.('(prefers-color-scheme: dark)').matches);
 
@@ -27,24 +29,21 @@ export default function Layout() {
           </NavLink>
           <div className="grow" />
           <button className="btn icon cab-btn" onClick={() => setTema(oscuro ? 'light' : 'dark')} aria-label={oscuro ? 'Modo claro' : 'Modo oscuro'} title={oscuro ? 'Modo claro' : 'Modo oscuro'}>{oscuro ? <Ic.Sol size={22} /> : <Ic.Luna size={22} />}</button>
-          <div className="usuario">
-            <button className="btn cab-btn avatar" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Mi cuenta">{user.nombre.split(' ').map((x) => x[0]).slice(0, 2).join('')}</button>
-            {menu && (
-              <>
-                <div style={{ position: 'fixed', inset: 0, zIndex: 60 }} onClick={() => setMenu(false)} />
-                <div className="menu-user">
-                  <div className="mu-head"><b>{user.nombre}</b><span>{ROLES[user.rol]}</span></div>
-                  <NavLink to="/perfil" className="mu-item"><Ic.Operario size={20} />Mi cuenta</NavLink>
-                  {can('usuarios.admin') && <NavLink to="/usuarios" className="mu-item"><Ic.Llave size={20} />Usuarios y permisos</NavLink>}
-                  {can('sistema.admin') && <NavLink to="/sistema" className="mu-item"><Ic.Archivo size={20} />Copias de seguridad</NavLink>}
-                  <button className="mu-item" onClick={logout}><Ic.Salir size={20} />Cerrar sesión</button>
-                </div>
-              </>
-            )}
-          </div>
+          <button className="btn cab-btn avatar" onClick={() => setMenu(true)} aria-haspopup="dialog" aria-label="Mi cuenta">{user.nombre.split(' ').map((x) => x[0]).slice(0, 2).join('')}</button>
         </div>
       </header>
       <main className="content"><Outlet /></main>
+      {menu && (
+        <ActionSheet onClose={() => setMenu(false)}
+          titulo={<div className="cuenta-cab"><span className="avatar-cliente grande">{user.nombre.split(' ').map((x) => x[0]).slice(0, 2).join('')}</span><b>{user.nombre}</b><span>{ROLES[user.rol]} · {user.username}</span></div>}
+          opciones={[
+            { value: 'perfil', label: 'Mi cuenta y contraseña', icon: Ic.Operario, onClick: () => nav('/perfil') },
+            { value: 'tema', label: oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro', icon: oscuro ? Ic.Sol : Ic.Luna, onClick: () => setTema(oscuro ? 'light' : 'dark') },
+            ...(can('usuarios.admin') ? [{ value: 'usuarios', label: 'Usuarios y permisos', icon: Ic.Llave, onClick: () => nav('/usuarios') }] : []),
+            ...(can('sistema.admin') ? [{ value: 'sistema', label: 'Copias de seguridad', icon: Ic.Archivo, onClick: () => nav('/sistema') }] : []),
+            { value: 'salir', label: 'Cerrar sesión', icon: Ic.Salir, danger: true, onClick: logout },
+          ]} />
+      )}
     </div>
   );
 }

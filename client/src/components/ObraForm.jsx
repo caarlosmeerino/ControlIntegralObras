@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../lib/app.jsx';
 import { post, put } from '../lib/api.js';
-import { Sheet, Field } from './ui.jsx';
+import { Sheet, Field, Selector } from './ui.jsx';
 import * as f from '../lib/format.js';
 
 const toKg = (v) => { const n = f.parseNum(v); return n == null ? 0 : n * 1000; };
@@ -43,7 +43,7 @@ export default function ObraForm({ obra, clientes = [], cliente = '', onClose, o
         <Field label="Toneladas previstas"><input className="input" inputMode="decimal" value={d.toneladas} onChange={s('toneladas')} placeholder="Ej.: 120,5" /></Field>
         {can('costes.ver') && <Field label="Presupuesto (€)"><input className="input" inputMode="decimal" value={d.presupuesto} onChange={s('presupuesto')} /></Field>}
         {obra && <>
-          <Field label="Estado"><select className="input" value={d.estado} onChange={s('estado')}>{Object.entries(f.ESTADOS_OBRA).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></Field>
+          <Field label="Estado"><Selector titulo="Estado del proyecto" value={d.estado} onChange={(v) => setD({ ...d, estado: v })} options={Object.entries(f.ESTADOS_OBRA).map(([k, v]) => [k, v.label])} /></Field>
           <Field label="Código"><input className="input mono" value={d.codigo} onChange={s('codigo')} /></Field>
         </>}
         <Field label="Notas" full><textarea className="input" value={d.observaciones || ''} onChange={s('observaciones')} /></Field>

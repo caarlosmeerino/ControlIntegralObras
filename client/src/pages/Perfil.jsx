@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { KeyRound, Moon, Sun, MonitorSmartphone, Download } from 'lucide-react';
 import { useApp } from '../lib/app.jsx';
 import { post } from '../lib/api.js';
-import { Field, Seg } from '../components/ui.jsx';
+import { Field, Selector } from '../components/ui.jsx';
 import * as f from '../lib/format.js';
 
 export default function Perfil() {
@@ -17,7 +17,7 @@ export default function Perfil() {
     <div style={{ maxWidth: 640 }}>
       <div className="page-head"><div><h1>{user.nombre}</h1><p>{f.ROLES[user.rol]} · usuario <span className="mono">{user.username}</span>{user.trabajador ? ` · trabajador de ${f.SECCIONES[user.trabajador.seccion]}` : ''}</p></div></div>
       <div className="card mb"><h2 className="mb">Apariencia</h2>
-        <Seg value={tema} onChange={setTema} options={[['light', <span key="l" className="row" style={{ gap: 6 }}><Sun size={18} />Claro</span>], ['dark', <span key="d" className="row" style={{ gap: 6 }}><Moon size={18} />Oscuro</span>], ['auto', <span key="a" className="row" style={{ gap: 6 }}><MonitorSmartphone size={18} />Sistema</span>]]} />
+        <Selector titulo="Apariencia" value={tema} onChange={setTema} options={[{ value: 'light', label: 'Claro', icon: Sun }, { value: 'dark', label: 'Oscuro', icon: Moon }, { value: 'auto', label: 'Igual que el sistema', icon: MonitorSmartphone }]} />
         <div className="hint mt">El modo oscuro reduce reflejos y deslumbramiento en el taller.</div>
       </div>
       <div className="card mb"><h2 className="mb"><Download size={20} style={{ verticalAlign: -3 }} /> Instalar en el móvil</h2>

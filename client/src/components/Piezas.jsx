@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Upload } from 'lucide-react';
 import { useApp } from '../lib/app.jsx';
 import { post, put, del } from '../lib/api.js';
-import { Sheet, Field } from './ui.jsx';
+import { Sheet, Field, Selector } from './ui.jsx';
 import * as f from '../lib/format.js';
 
 export function PiezaForm({ obraId, pieza, onClose, onSaved }) {
@@ -29,7 +29,7 @@ export function PiezaForm({ obraId, pieza, onClose, onSaved }) {
       footer={<>{pieza && can('piezas.editar') && <button className="btn danger" onClick={borrar}>Eliminar</button>}<span className="grow hide-m" /><button className="btn" onClick={onClose}>Cancelar</button><button className="btn primary" disabled={busy} onClick={guardar}>Guardar</button></>}>
       <div className="form-grid">
         <Field label="Marca / referencia *"><input className="input mono" value={d.marca} onChange={s('marca')} placeholder="P-01" autoFocus={!pieza} /></Field>
-        <Field label="Elemento"><select className="input" value={d.elemento} onChange={s('elemento')}>{Object.entries(f.ELEMENTOS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></Field>
+        <Field label="Elemento"><Selector titulo="Tipo de elemento" value={d.elemento} onChange={(v) => setD({ ...d, elemento: v })} options={Object.entries(f.ELEMENTOS)} /></Field>
         <Field label="Perfil"><input className="input" value={d.perfil} onChange={s('perfil')} placeholder="HEB-300" /></Field>
         <Field label="Plano asociado"><input className="input" value={d.plano} onChange={s('plano')} placeholder="E-101" /></Field>
         <Field label="Peso unitario (kg) *"><input className="input" inputMode="decimal" value={d.peso_unitario_kg} onChange={s('peso_unitario_kg')} placeholder="1.250" /></Field>

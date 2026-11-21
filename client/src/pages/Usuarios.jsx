@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Save, ShieldCheck } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { post, put } from '../lib/api.js';
-import { Loading, ErrorBox, DataTable, Sheet, Field } from '../components/ui.jsx';
+import { Loading, ErrorBox, DataTable, Sheet, Field, Selector } from '../components/ui.jsx';
 import * as f from '../lib/format.js';
 
 const DESC = {
@@ -40,7 +40,7 @@ export default function Usuarios() {
             <Field label="Nombre completo *"><input className="input" value={edit.nombre} onChange={(e) => setEdit({ ...edit, nombre: e.target.value })} /></Field>
             <Field label="Usuario *"><input className="input mono" value={edit.username} disabled={!!edit.id} autoCapitalize="none" onChange={(e) => setEdit({ ...edit, username: e.target.value })} /></Field>
             <Field label="Correo electrónico"><input className="input" type="email" value={edit.email || ''} onChange={(e) => setEdit({ ...edit, email: e.target.value })} /></Field>
-            <Field label="Perfil"><select className="input" value={edit.rol} disabled={edit.id === user.id} onChange={(e) => setEdit({ ...edit, rol: e.target.value })}>{Object.entries(f.ROLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></Field>
+            <Field label="Perfil"><Selector titulo="Perfil del usuario" value={edit.rol} disabled={edit.id === user.id} onChange={(v) => setEdit({ ...edit, rol: v })} options={Object.entries(f.ROLES).map(([k, v]) => ({ value: k, label: v, sub: DESC[k] }))} /></Field>
             <Field label={edit.id ? 'Nueva contraseña (opcional)' : 'Contraseña *'} hint="Mínimo 8 caracteres" full><input className="input" type="password" autoComplete="new-password" value={edit.password} onChange={(e) => setEdit({ ...edit, password: e.target.value })} /></Field>
             <div className="full small muted">{DESC[edit.rol]}</div>
             {edit.id !== user.id && <label className="check"><input type="checkbox" checked={edit.activo} onChange={(e) => setEdit({ ...edit, activo: e.target.checked })} />Usuario activo</label>}
