@@ -920,3 +920,86 @@ button.lista-fila:last-child { border-bottom: 0; }
 .cal-barra.terminado { text-decoration: line-through; text-decoration-color: rgb(35 104 58 / .4); }
 :root[data-theme="dark"] .cal-barra, :root[data-theme="dark"] .sg-barra { filter: saturate(.8) brightness(.8); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cal-barra, :root:not([data-theme="light"]) .sg-barra { filter: saturate(.8) brightness(.8); } }
+
+/* =====================================================================
+   ESTILO PROFESIONAL (menos iOS): azul corporativo, grises neutros,
+   esquinas contenidas, colores de estado sobrios y sin degradados
+   ===================================================================== */
+:root, :root[data-theme="light"] {
+  --bg: #f4f5f7; --surface: #ffffff; --surface-2: #f8f9fb; --surface-3: #eef0f3;
+  --fill: #eef0f3; --border: #e3e6eb; --sep: #e6e8ec;
+  --text: #111827; --text-2: #374151; --text-3: #6b7280;
+  --accent: #1d4ed8; --accent-hover: #1e40af; --accent-soft: #eef3ff; --link: #1d4ed8;
+  --primary: #1d4ed8; --primary-soft: #eef3ff;
+  --ok: #16a34a; --ok-soft: #e7f6ec; --ok-txt: #15803d;
+  --warn: #d97706; --warn-soft: #fdf3e1; --warn-txt: #b45309;
+  --bad: #dc2626; --bad-soft: #fdecec; --bad-txt: #b91c1c;
+  --idle: #6b7280; --idle-soft: #f1f2f4; --idle-txt: #4b5563;
+  --info: #1d4ed8; --info-soft: #eef3ff; --info-txt: #1e40af;
+  --bar: #ffffff;
+  --font: 'Inter Variable', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --display: 'Inter Variable', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f1115; --surface: #171a21; --surface-2: #1c2029; --surface-3: #242935; --fill: #242935; --border: #2a2f3a; --sep: #2a2f3a;
+    --text: #e8eaee; --text-2: #c7cbd3; --text-3: #8b93a1; --accent: #5b8cff; --accent-hover: #7aa2ff; --accent-soft: rgba(91,140,255,.14); --link: #7aa2ff; --primary: #5b8cff; --bar: #171a21; }
+}
+:root[data-theme="dark"] { --bg: #0f1115; --surface: #171a21; --surface-2: #1c2029; --surface-3: #242935; --fill: #242935; --border: #2a2f3a; --sep: #2a2f3a;
+  --text: #e8eaee; --text-2: #c7cbd3; --text-3: #8b93a1; --accent: #5b8cff; --accent-hover: #7aa2ff; --accent-soft: rgba(91,140,255,.14); --link: #7aa2ff; --primary: #5b8cff; --bar: #171a21; }
+
+body { font-size: 15px; letter-spacing: 0; }
+h1, h2, h3, h4 { letter-spacing: -.01em; font-weight: 600; }
+.app-icon { background: var(--accent); border-radius: 8px; box-shadow: none; }
+
+/* Botones e inputs */
+.btn { border-radius: 8px; font-weight: 500; color: var(--text-2); background: var(--surface); border: 1px solid var(--border); }
+.btn:hover { background: var(--surface-2); }
+.btn:active { transform: none; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.ok { border-color: var(--ok); }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.ghost:hover { background: var(--fill); }
+.btn.danger { color: var(--bad-txt); }
+.btn-mas { border-radius: 8px; background: var(--accent); }
+.btn-mas.secundario { background: var(--surface); color: var(--text-2); border: 1px solid var(--border); }
+.input, .input.selector { border-radius: 8px; border: 1px solid var(--border); background: var(--surface); }
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.chip { border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+.chip.on { background: var(--accent); border-color: var(--accent); }
+
+/* Tarjetas, listas y cabeceras */
+.card, .lista, .cab-tarjeta, .calendario, .resumen-semana > div { border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(16, 24, 40, .04); }
+.lista-plana { border: 0; box-shadow: none; border-radius: 0; }
+.cab-titulo { font-weight: 600; }
+.icono-cab { border-radius: 8px; background: var(--accent-soft) !important; color: var(--accent); box-shadow: none; }
+.avatar-cliente { box-shadow: none; font-weight: 600; }
+.badge { border-radius: 6px; height: 24px; font-weight: 500; }
+.mc-avatar { background: var(--accent-soft); color: var(--accent); }
+.mc-icono { border-radius: 7px; }
+.mc-switch.on { background: var(--accent); }
+
+/* Pestañas subrayadas en lugar de segmentos tipo iOS */
+.tabs { background: transparent; border-radius: 0; padding: 0; gap: 4px; border-bottom: 1px solid var(--border); width: 100%; }
+.tabs button { border-radius: 0; min-height: 42px; padding: 0 14px; color: var(--text-3); font-weight: 500; position: relative; }
+.tabs button:hover { color: var(--text); }
+.tabs button.on { background: transparent; box-shadow: none; color: var(--accent); font-weight: 600; }
+.tabs button.on::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--accent); border-radius: 2px; }
+.seg { border-radius: 8px; }
+.seg button { border-radius: 6px; }
+
+/* Hojas y menú de cuenta con esquinas más contenidas */
+.sheet { border-radius: 12px; }
+.menu-cuenta { border-radius: 12px; }
+.picker { border-radius: 12px; }
+@media (max-width: 760px) {
+  .sheet, .menu-cuenta, .picker { border-radius: 14px 14px 0 0; }
+  .tab.on { color: var(--accent); }
+}
+
+/* Calendario: semana actual y hoy en azul corporativo */
+.cal-semana.actual { background: var(--accent-soft); }
+.mc-icono { background: var(--accent-soft) !important; color: var(--accent); }
+.mc-salir .mc-icono { background: var(--bad-soft) !important; color: var(--bad); }
+@media (max-width: 520px) { .tabs button { padding: 0 9px; font-size: .88rem; } .tabs button.on::after { left: 4px; right: 4px; } }
