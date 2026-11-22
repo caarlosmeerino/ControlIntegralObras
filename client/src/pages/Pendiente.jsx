@@ -6,6 +6,7 @@ import { qs, put } from '../lib/api.js';
 import { Loading, ErrorBox, Empty, Cabecera, IconoIniciales, Selector, Status } from '../components/ui.jsx';
 import { AvatarCliente } from '../components/ClientePicker.jsx';
 import IconoPieza from '../components/IconoPieza.jsx';
+import ExportarPdf from '../components/ExportarPdf.jsx';
 import { semanaISO, lunesDeSemana, masDias, estadoEtapa, pastelObra, MESES } from '../lib/obra.js';
 import * as f from '../lib/format.js';
 
@@ -54,6 +55,7 @@ export default function Pendiente() {
   const { data: obras } = useData('/obras');
   const { data: empleados } = useData(can('personal.ver') ? '/empleados' : null);
   const [marcadas, setMarcadas] = useState({}); // id → true (hecho ahora; se queda tachado)
+  const [exportar, setExportar] = useState(false);
 
   const piezas = data?.piezas || [];
   const listas = useMemo(() => ({
@@ -88,8 +90,7 @@ export default function Pendiente() {
   return (
     <>
       <Cabecera icono={<IconoIniciales icon={ListChecks} color="" />} titulo="Pendiente" sub={R.txt}
-        acciones={<a className="btn-mas" href={`/api/pendiente/pdf${qs({ ver: tipo, desde: R.desde, hasta: R.hasta, obra_id: fObra, empleado_id: fEmp, empleado_nombre: empSel?.nombre, periodo: R.txt })}`}
-          target="_blank" rel="noopener" aria-label={`Descargar PDF: ${T.label}`} title="Descargar PDF"><FileDown size={19} /><span className="txt">PDF</span></a>} />
+        acciones={<button type="button" className="btn-mas" onClick={() => setExportar(true)} aria-label="Exportar PDF" title="Exportar PDF"><FileDown size={19} /><span className="txt">Exportar PDF</span></button>} />
 
       <div className="filtros-semana mb">
         <Selector filtro titulo="¿Cuándo?" value={cuando} onChange={(v) => set('cuando', v, 'semana')} options={[
@@ -180,6 +181,7 @@ export default function Pendiente() {
           </div>
         </>
       )}
+      {exportar && <ExportarPdf inicial={{ tipo, cuando, obra: fObra, empleado: fEmp }} obras={obras} empleados={empleados} rango={(c) => rango(c, hoy)} onClose={() => setExportar(false)} />}
     </>
   );
 }

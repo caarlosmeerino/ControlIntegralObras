@@ -14,6 +14,7 @@ async function cargar(req) {
   const p = [req.user.id];
   const cond = [`o.propietario_id=$1`, `o.estado IN ('planificada','en_curso','pausada')`];
   if (req.query.obra_id) { p.push(Number(req.query.obra_id)); cond.push(`o.id=$${p.length}`); }
+  if (req.query.obra_ids) { p.push(String(req.query.obra_ids).split(',').map(Number).filter(Boolean)); cond.push(`o.id = ANY($${p.length})`); }
   if (req.query.empleado_id) { p.push(Number(req.query.empleado_id)); cond.push(`EXISTS (SELECT 1 FROM obra_empleados oe WHERE oe.obra_id=o.id AND oe.trabajador_id=$${p.length})`); }
   // Fases dentro del rango (o atrasadas sin terminar si el rango incluye hoy o el futuro)
   let rango = 'TRUE';
@@ -48,31 +49,37 @@ async function cargar(req) {
 
 r.get('/', requirePerm('obras.ver'), wrap(async (req, res) => res.json(await cargar(req))));
 
-// PDF para el taller / la obra: lo pendiente agrupado por obra, con fecha límite y casillas para marcar
+// PDF para el taller / la obra: una o varias listas (tareas, material, fabricar, montar), agrupadas por obra
 r.get('/pdf', requirePerm('obras.ver'), wrap(async (req, res) => {
-  const tipo = Object.keys(TITULOS).includes(req.query.ver) ? req.query.ver : 'fabricar';
+  const tipos = String(req.query.tipos || req.query.ver || 'fabricar').split(',').filter((t) => TITULOS[t]);
+  if (!tipos.length) tipos.push('fabricar');
   const { etapas, piezas } = await cargar(req);
-  const lista = tipo === 'material' ? piezas.filter((p) => !p.material_recibido && !p.fecha_fabricacion)
-    : tipo === 'fabricar' ? piezas.filter((p) => !p.fecha_fabricacion)
-      : tipo === 'montar' ? piezas.filter((p) => p.fecha_fabricacion && !p.fecha_montaje) : etapas;
-  const grupos = [];
-  for (const x of lista) {
-    let g = grupos.find((y) => y.obra.id === x.obra_id);
-    if (!g) grupos.push(g = { obra: { id: x.obra_id, nombre: x.obra_nombre, cliente: x.cliente, codigo: x.codigo, direccion: x.direccion, ciudad: x.ciudad }, piezas: [], etapas: [], limite: null });
-    (tipo === 'tareas' ? g.etapas : g.piezas).push(x);
-    const fin = x.fecha_fin ? String(x.fecha_fin).slice(0, 10) : null;
-    if (fin && (!g.limite || fin < g.limite)) g.limite = fin;
-  }
-  const limpio = (v) => String(v || '').replace(/[\r\n]/g, ' ').slice(0, 120);
+  const secciones = tipos.map((tipo) => {
+    const lista = tipo === 'material' ? piezas.filter((p) => !p.material_recibido && !p.fecha_fabricacion)
+      : tipo === 'fabricar' ? piezas.filter((p) => !p.fecha_fabricacion)
+        : tipo === 'montar' ? piezas.filter((p) => p.fecha_fabricacion && !p.fecha_montaje) : etapas;
+    const grupos = [];
+    for (const x of lista) {
+      let g = grupos.find((y) => y.obra.id === x.obra_id);
+      if (!g) grupos.push(g = { obra: { id: x.obra_id, nombre: x.obra_nombre, cliente: x.cliente, codigo: x.codigo, direccion: x.direccion, ciudad: x.ciudad }, piezas: [], etapas: [], limite: null });
+      (tipo === 'tareas' ? g.etapas : g.piezas).push(x);
+      const fin = x.fecha_fin ? String(x.fecha_fin).slice(0, 10) : null;
+      if (fin && (!g.limite || fin < g.limite)) g.limite = fin;
+    }
+    return { tipo, grupos };
+  });
+  const limpio = (v) => String(v || '').replace(/[\r\n]/g, ' ').slice(0, 160);
   const filtros = [];
-  if (req.query.obra_id && grupos[0]) filtros.push(['Obra', grupos[0].obra.nombre]);
+  const nombresObras = [...new Map([...etapas, ...piezas].map((x) => [x.obra_id, x.obra_nombre])).values()];
+  if ((req.query.obra_id || req.query.obra_ids) && nombresObras.length) filtros.push([nombresObras.length === 1 ? 'Obra' : 'Obras', nombresObras.join(', ')]);
   if (req.query.empleado_nombre) filtros.push(['Empleado', limpio(req.query.empleado_nombre)]);
   const periodo = limpio(req.query.periodo) || 'Todo lo pendiente';
   const generado = new Intl.DateTimeFormat('es-ES', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Madrid' }).format(new Date());
-  const nombre = `${TITULOS[tipo]} - ${periodo}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_');
+  const titulo = tipos.length === 1 ? TITULOS[tipos[0]] : 'Pendiente de obra';
+  const nombre = `${titulo} - ${periodo}`.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_');
   res.set('Content-Type', 'application/pdf');
   res.set('Content-Disposition', `${req.query.descargar ? 'attachment' : 'inline'}; filename="${nombre}.pdf"`);
-  pdfPendiente(res, { tipo, periodo, filtros, grupos, generado });
+  pdfPendiente(res, { secciones, periodo, filtros, generado });
 }));
 
 export default r;

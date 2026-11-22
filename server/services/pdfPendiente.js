@@ -17,11 +17,14 @@ const AZUL = '#1d4ed8'; const TINTA = '#111827'; const GRIS = '#6b7280'; const L
 /**
  * grupos: [{ obra: {nombre, cliente, direccion, ciudad, codigo}, limite, piezas?: [], etapas?: [] }]
  */
-export function pdfPendiente(res, { tipo, periodo, filtros, grupos, generado }) {
-  const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true, info: { Title: `${TITULOS[tipo]} · ${periodo}`, Author: 'Control Integral de Obras' } });
+export function pdfPendiente(res, { secciones, periodo, filtros, generado }) {
+  const tituloDoc = secciones.length === 1 ? TITULOS[secciones[0].tipo] : 'Pendiente de obra';
+  const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true, info: { Title: `${tituloDoc} · ${periodo}`, Author: 'Control Integral de Obras' } });
   doc.pipe(res);
   const X = 40; const W = doc.page.width - 80; const BOTTOM = doc.page.height - 60;
   let y = 40;
+  secciones.forEach(({ tipo, grupos }, si) => {
+  if (si > 0) doc.addPage();
 
   // ---- Cabecera del documento ----
   doc.rect(0, 0, doc.page.width, 6).fill(AZUL);
@@ -109,7 +112,7 @@ export function pdfPendiente(res, { tipo, periodo, filtros, grupos, generado }) 
     asegurar(22);
     const tKg = g.piezas.reduce((s, p) => s + p.kg, 0); const tUd = g.piezas.reduce((s, p) => s + p.cantidad, 0);
     doc.fill(TINTA).font('Helvetica-Bold').fontSize(9)
-      .text(`Total: ${g.piezas.length} marcas · ${nf(0).format(tUd)} unidades · ${kg(tKg)}`, X, y + 6, { width: W, align: 'right' });
+      .text(`Total: ${g.piezas.length} ${g.piezas.length === 1 ? "marca" : "marcas"} · ${nf(0).format(tUd)} ${tUd === 1 ? "unidad" : "unidades"} · ${kg(tKg)}`, X, y + 6, { width: W, align: 'right' });
     y += 22;
   });
 
@@ -124,13 +127,14 @@ export function pdfPendiente(res, { tipo, periodo, filtros, grupos, generado }) 
       doc.fill(GRIS).font('Helvetica').fontSize(8).text(t, x, y + 34, { width: ancho });
     });
   }
+  });
 
   // ---- Pie con número de página ----
   const r = doc.bufferedPageRange();
   for (let i = r.start; i < r.start + r.count; i++) {
     doc.switchToPage(i);
     doc.page.margins.bottom = 0; // el pie va por debajo del margen sin crear páginas nuevas
-    doc.fill(GRIS).font('Helvetica').fontSize(7.5).text(`${TITULOS[tipo]} · ${periodo}`, X, doc.page.height - 32, { width: W / 2, lineBreak: false });
+    doc.fill(GRIS).font('Helvetica').fontSize(7.5).text(`${tituloDoc} · ${periodo}`, X, doc.page.height - 32, { width: W / 2, lineBreak: false });
     doc.text(`Página ${i - r.start + 1} de ${r.count}`, X + W / 2, doc.page.height - 32, { width: W / 2, align: 'right', lineBreak: false });
   }
   doc.end();

@@ -1062,3 +1062,6 @@ h1, h2, h3, h4 { letter-spacing: -.01em; font-weight: 600; }
   .filtros-semana::-webkit-scrollbar { display: none; }
   .filtros-semana > * { flex: none; }
 }
+.lista-obras-pdf { max-height: 300px; overflow-y: auto; }
+.lista-obras-pdf .lista-fila { min-height: 54px; padding: 10px 14px; }
+.lista-obras-pdf small { font-size: .8rem; }
