@@ -11,7 +11,7 @@ import './styles.css';
 const P = {
   Cliente: lazy(() => import('./pages/Cliente.jsx')), Obra: lazy(() => import('./pages/ObraDetalle.jsx')), Fase: lazy(() => import('./pages/Fase.jsx')),
   Planning: lazy(() => import('./pages/Planning.jsx')), Registro: lazy(() => import('./components/Registro.jsx')),
-  Usuarios: lazy(() => import('./pages/Usuarios.jsx')), Sistema: lazy(() => import('./pages/Sistema.jsx')), Perfil: lazy(() => import('./pages/Perfil.jsx')),
+  Empleados: lazy(() => import('./pages/Empleados.jsx')), Usuarios: lazy(() => import('./pages/Usuarios.jsx')), Sistema: lazy(() => import('./pages/Sistema.jsx')), Perfil: lazy(() => import('./pages/Perfil.jsx')),
 };
 
 function Guard({ perm, children }) {
@@ -34,6 +34,7 @@ function Root() {
         {r('obras/:id/fases/:faseId', P.Fase, ['obras.ver'])}
         {r('planning/:anio/:semana', P.Planning, ['obras.ver'])}
         {r('piezas', P.Registro, ['piezas.ver'])}
+        {r('empleados', P.Empleados, ['personal.ver'])}
         {r('usuarios', P.Usuarios, ['usuarios.admin'])}
         {r('sistema', P.Sistema, ['sistema.admin'])}
         {r('perfil', P.Perfil)}

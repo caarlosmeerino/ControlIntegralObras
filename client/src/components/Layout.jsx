@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { WifiOff, CalendarDays, Boxes, Users, ChevronRight, UserRound, Moon, Sun, DatabaseBackup, LogOut } from 'lucide-react';
+import { WifiOff, CalendarDays, Boxes, Users, HardHat, ChevronRight, UserRound, Moon, Sun, DatabaseBackup, LogOut } from 'lucide-react';
 import * as Ic from './iconos.jsx';
 import { bloquearScroll } from './ui.jsx';
 import { useApp } from '../lib/app.jsx';
@@ -63,7 +63,7 @@ export default function Layout() {
   const secciones = [
     { to: '/', label: 'Planning', icon: CalendarDays, on: enPlanning },
     { to: '/piezas', label: 'Piezas', icon: Boxes, on: loc.pathname.startsWith('/piezas') },
-    ...(can('usuarios.admin') ? [{ to: '/usuarios', label: 'Usuarios', icon: Users, on: loc.pathname.startsWith('/usuarios') }] : []),
+    ...(can('personal.ver') ? [{ to: '/empleados', label: 'Empleados', icon: HardHat, on: loc.pathname.startsWith('/empleados') }] : []),
   ];
   const ir = (to) => { setMenu(false); nav(to); };
 
@@ -103,7 +103,7 @@ export default function Layout() {
             <s.icon size={24} strokeWidth={s.on ? 2.3 : 1.8} /><span>{s.label}</span>
           </NavLink>
         ))}
-        <button type="button" className={`tab ${menu || ['/perfil', '/sistema'].some((p) => loc.pathname.startsWith(p)) ? 'on' : ''}`} onClick={() => setMenu(true)} aria-label="Mi cuenta">
+        <button type="button" className={`tab ${menu || ['/perfil', '/sistema', '/usuarios'].some((p) => loc.pathname.startsWith(p)) ? 'on' : ''}`} onClick={() => setMenu(true)} aria-label="Mi cuenta">
           <span className="mc-avatar mini">{iniciales(user.nombre)}</span><span>Cuenta</span>
         </button>
       </nav>

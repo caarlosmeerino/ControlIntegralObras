@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Pencil, MapPin, Navigation, CalendarDays, Ch
 import { useApp, useData } from '../lib/app.jsx';
 import { Loading, ErrorBox, Tabs, Status, Bar, BotonMas, Cabecera, IconoIniciales } from '../components/ui.jsx';
 import PiezasProyecto from '../components/PiezasProyecto.jsx';
+import EquipoObra from '../components/EquipoObra.jsx';
 import { ArchivosObra } from '../components/Archivos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import { urlCliente, estadoEtapa, obraRetrasada, colorCliente } from '../lib/obra.js';
@@ -67,7 +68,7 @@ export default function ObraDetalle() {
         </>} />
 
       <Tabs ancho value={tab} onChange={setTab} tabs={[
-        { id: 'resumen', label: 'Resumen' }, { id: 'piezas', label: 'Piezas' }, { id: 'planos', label: 'Planos' }, { id: 'docs', label: 'Documentos' },
+        { id: 'resumen', label: 'Resumen' }, { id: 'piezas', label: 'Piezas' }, { id: 'equipo', label: 'Equipo' }, { id: 'planos', label: 'Planos' }, { id: 'docs', label: 'Documentos' },
       ]} />
 
       {tab === 'resumen' && (
@@ -92,6 +93,7 @@ export default function ObraDetalle() {
         </div>
       )}
       {tab === 'piezas' && <PiezasProyecto obraId={o.id} etapas={o.etapas || []} />}
+      {tab === 'equipo' && <EquipoObra obraId={o.id} />}
       {tab === 'planos' && <ArchivosObra obraId={o.id} solo={['plano']} />}
       {tab === 'docs' && <ArchivosObra obraId={o.id} solo={['documento', 'foto']} />}
       {edit && <ObraForm obra={o} onClose={() => setEdit(false)} onSaved={reload} />}

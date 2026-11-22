@@ -27,6 +27,7 @@ import sistemaR from './routes/sistema.js';
 import direccionesR from './routes/direcciones.js';
 import catalogoR, { sembrarCatalogo } from './routes/catalogo.js';
 import etapasR from './routes/etapas.js';
+import empleadosR from './routes/empleados.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -63,6 +64,7 @@ app.use('/api/sistema', sistemaR);
 app.use('/api/direcciones', direccionesR);
 app.use('/api/catalogo', catalogoR);
 app.use('/api/etapas', etapasR);
+app.use('/api/empleados', empleadosR);
 app.use('/api', panelR);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 app.use(errorHandler);

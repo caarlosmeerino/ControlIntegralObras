@@ -904,3 +904,9 @@ button.lista-fila:last-child { border-bottom: 0; }
   :root[data-theme="dark"] .tabbar { background: var(--surface); }
 }
 @media (max-width: 760px) and (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tabbar { background: var(--surface); } }
+
+/* ---------- Empleados ---------- */
+.elegible.on { background: var(--accent-soft); }
+.marcador { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--sep); display: grid; place-items: center; flex: none; color: #fff; }
+.elegible.on .marcador { background: var(--accent); border-color: var(--accent); }
+.chips-sugeridas { display: flex; flex-wrap: wrap; gap: 8px; }

@@ -38,7 +38,7 @@ export const ROLE_PERMS = {
   jefe_taller: ['obras.ver', 'piezas.ver', 'piezas.editar', 'avance.oficina', 'avance.taller', 'avance.corregir',
     'partes.taller', 'personal.ver', 'informes.ver', 'archivos.subir', 'fases.editar'],
   encargado_montaje: ['obras.ver', 'piezas.ver', 'avance.obra', 'partes.montaje', 'personal.ver', 'archivos.subir'],
-  operario: ['obras.ver', 'piezas.ver'],
+  operario: ['obras.ver', 'piezas.ver', 'personal.ver'],
   administracion: ['obras.ver', 'piezas.ver', 'personal.ver', 'personal.editar', 'costes.ver', 'costes.editar',
     'informes.ver', 'obras.editar'],
 };
