@@ -700,3 +700,55 @@ input[type="date"].input { -webkit-appearance: none; appearance: none; display: 
 .ficha-familia.propia span { margin-left: auto; }
 .sheet .fichas-familia .ficha-familia { background: var(--surface-2); box-shadow: none; }
 @media (max-width: 520px) { .fichas-familia { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- Encabezados compactos (estilo barra de navegación iOS) ---------- */
+.page-head { flex-wrap: nowrap; align-items: center; gap: 12px; margin-bottom: 20px; }
+.page-head > div:first-child { min-width: 0; flex: 1; }
+.page-head h1 { font-size: 1.85rem; font-weight: 700; letter-spacing: -.025em; line-height: 1.15; }
+.page-head p { margin-top: 3px; font-size: .95rem; color: var(--text-3); }
+.txt-mal { color: var(--bad-txt); }
+.acciones-cab { display: flex; gap: 8px; flex: none; align-self: flex-start; }
+.btn-mas { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 38px; padding: 0 16px; border: 0; border-radius: 999px;
+  background: var(--accent); color: #fff; font-size: .93rem; font-weight: 600; cursor: pointer; flex: none; white-space: nowrap; transition: transform .1s, background .15s; }
+.btn-mas:hover { background: var(--accent-hover); text-decoration: none; }
+.btn-mas:active { transform: scale(.94); }
+.btn-mas.secundario { background: var(--fill); color: var(--accent); }
+.btn-mas.secundario:hover { background: var(--surface-3); }
+@media (max-width: 980px) {
+  .page-head { margin-bottom: 16px; }
+  .page-head h1 { font-size: 1.6rem; }
+  .page-head p { font-size: .88rem; }
+  .btn-mas { width: 40px; height: 40px; padding: 0; align-self: flex-start; }
+  .btn-mas .txt { display: none; }
+  .page-head > .btn:not(.primary), .page-head > .btn.primary { width: auto; }
+  .volver { margin-bottom: 8px; font-size: .95rem; }
+  .content { padding: 14px 16px calc(32px + env(safe-area-inset-bottom)); }
+  .cab-fila { height: 50px; }
+  .card { padding: 16px; border-radius: 16px; }
+  .lista-fila { padding: 12px 14px; min-height: 64px; gap: 12px; }
+  .lista-titulo { font-size: 1rem; }
+  .lista-sub { font-size: .82rem; }
+  .seccion { font-size: .85rem; }
+  .busqueda-grande input { height: 44px; font-size: 1rem; }
+  .cab-fase .ring { display: none; }
+  .kv { grid-template-columns: 1fr; gap: 2px; }
+  .kv dt { font-size: .8rem; margin-top: 8px; }
+  .sheet-head h2 { font-size: 1.15rem; }
+  .tabs { margin-bottom: 16px; }
+  .resumen-semana > div { flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px; }
+  .sg-cab, .sg-fila { grid-template-columns: 1fr; }
+  .sg-cab > span:first-child { display: none !important; }
+  .sg-cab { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .sg-fila { gap: 6px; }
+  .check-texto { font-size: 1rem; }
+}
+
+.nav-semana { display: flex; align-items: center; gap: 2px; flex: none; align-self: flex-start; }
+.punto-retraso { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--bad); margin-left: 8px; vertical-align: 2px; }
+.cal-cabecera h2 { white-space: nowrap; }
+@media (max-width: 520px) {
+  .cal-cabecera h2 { font-size: 1.2rem; }
+  .calendario { padding: 14px 10px 12px; }
+  .cal-cabecera { padding: 0 4px 10px; }
+  .fecha-chip { width: 44px; }
+}

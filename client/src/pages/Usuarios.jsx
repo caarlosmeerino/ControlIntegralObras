@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Save, ShieldCheck } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { post, put } from '../lib/api.js';
-import { Loading, ErrorBox, DataTable, Sheet, Field, Selector } from '../components/ui.jsx';
+import { Loading, ErrorBox, DataTable, Sheet, Field, Selector, BotonMas } from '../components/ui.jsx';
 import * as f from '../lib/format.js';
 
 const DESC = {
@@ -25,8 +25,8 @@ export default function Usuarios() {
   };
   return (
     <>
-      <div className="page-head"><div><h1>Usuarios y permisos</h1><p>El menú y las acciones de cada persona dependen de su perfil. Los permisos se comprueban en el servidor.</p></div>
-        <div className="page-actions"><button className="btn primary" onClick={() => setEdit({ username: '', nombre: '', email: '', rol: 'operario', password: '', activo: true })}><Plus />Nuevo usuario</button></div></div>
+      <div className="page-head"><div><h1>Usuarios</h1></div>
+        <BotonMas texto="Nuevo usuario" onClick={() => setEdit({ username: '', nombre: '', email: '', rol: 'operario', password: '', activo: true })} /></div>
       <div className="grid g3 mb">{Object.entries(f.ROLES).map(([k, v]) => <div key={k} className="card"><div className="row"><ShieldCheck size={20} style={{ color: 'var(--primary)' }} /><b>{v}</b></div><div className="small muted mt-s">{DESC[k]}</div><div className="xs mt-s">{data.filter((u) => u.rol === k && u.activo).length} usuario(s)</div></div>)}</div>
       <div className="card pad0">
         <DataTable rows={data} onRow={(u) => setEdit({ ...u, password: '' })}

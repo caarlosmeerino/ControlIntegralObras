@@ -15,7 +15,7 @@ export default function Perfil() {
   };
   return (
     <div style={{ maxWidth: 640 }}>
-      <div className="page-head"><div><h1>{user.nombre}</h1><p>{f.ROLES[user.rol]} · usuario <span className="mono">{user.username}</span>{user.trabajador ? ` · trabajador de ${f.SECCIONES[user.trabajador.seccion]}` : ''}</p></div></div>
+      <div className="page-head"><div><h1>Mi cuenta</h1><p>{user.nombre} · {user.username}</p></div></div>
       <div className="card mb"><h2 className="mb">Apariencia</h2>
         <Selector titulo="Apariencia" value={tema} onChange={setTema} options={[{ value: 'light', label: 'Claro', icon: Sun }, { value: 'dark', label: 'Oscuro', icon: Moon }, { value: 'auto', label: 'Igual que el sistema', icon: MonitorSmartphone }]} />
         <div className="hint mt">El modo oscuro reduce reflejos y deslumbramiento en el taller.</div>

@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Empty, Status } from '../components/ui.jsx';
+import { Loading, ErrorBox, Empty, Status, BotonMas } from '../components/ui.jsx';
 import { Lupa } from '../components/iconos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import Calendario from '../components/Calendario.jsx';
@@ -51,8 +51,8 @@ export default function Inicio() {
   return (
     <>
       <div className="page-head">
-        <div><h1>Planning</h1><p>{f.plural(activas.length, 'proyecto en curso', 'proyectos en curso')}{activas.filter(obraRetrasada).length ? ` · ${activas.filter(obraRetrasada).length} con retraso` : ''}</p></div>
-        {can('obras.editar') && <button className="btn primary big" onClick={() => setNueva(true)}><Plus size={22} />Nuevo proyecto</button>}
+        <div><h1>Planning</h1><p>{f.plural(activas.length, 'proyecto en curso', 'proyectos en curso')}{activas.filter(obraRetrasada).length ? <span className="txt-mal"> · {activas.filter(obraRetrasada).length} con retraso</span> : ''}</p></div>
+        {can('obras.editar') && <BotonMas texto="Nuevo proyecto" onClick={() => setNueva(true)} />}
       </div>
 
       <Calendario />
@@ -70,10 +70,9 @@ export default function Inicio() {
                 <Link key={c.nombre} to={urlCliente(c.nombre)} className="lista-fila">
                   <AvatarCliente nombre={c.nombre} size={44} />
                   <div className="grow">
-                    <div className="lista-titulo">{c.nombre}</div>
+                    <div className="lista-titulo">{c.nombre}{c.obras.some(obraRetrasada) && <i className="punto-retraso" title="Con retraso" />}</div>
                     <div className="lista-sub">{f.plural(c.obras.length, 'proyecto')}{act ? ` · ${act} en curso` : ''}{c.ciudades.size ? ` · ${[...c.ciudades].join(', ')}` : ''}</div>
                   </div>
-                  {c.obras.some(obraRetrasada) && <span className="badge bad">Retraso</span>}
                   <ChevronRight size={20} className="muted" />
                 </Link>
               );
@@ -96,7 +95,7 @@ export default function Inicio() {
                     <div className="lista-sub">{o.cliente}{o.ciudad ? ` · ${o.ciudad}` : ''}</div>
                     <div className="small" style={{ marginTop: 2, color: est === 'retrasado' ? 'var(--bad-txt)' : 'var(--text-2)' }}>{h.txt}</div>
                   </div>
-                  <Status estado={est} small />
+                  <ChevronRight size={18} className="muted" />
                 </Link>
               );
             })}

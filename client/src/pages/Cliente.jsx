@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Empty, Status, Selector } from '../components/ui.jsx';
+import { Loading, ErrorBox, Empty, Status, Selector, BotonMas } from '../components/ui.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import { ACTIVAS, estadoEtapa, faseActual, obraRetrasada } from '../lib/obra.js';
 import { AvatarCliente } from '../components/ClientePicker.jsx';
@@ -17,10 +17,7 @@ export function ProyectoFila({ o, mostrarCliente }) {
   return (
     <Link to={`/obras/${o.id}`} className="lista-fila proyecto-fila">
       <div className="grow">
-        <div className="row wrap" style={{ gap: 8 }}>
-          <span className="lista-titulo">{o.nombre}</span>
-          {retraso ? <Status estado="retrasado" small /> : <Status estado={o.estado} map={f.ESTADOS_OBRA} small />}
-        </div>
+        <div className="lista-titulo">{o.nombre}</div>
         <div className="lista-sub">{[o.codigo, mostrarCliente && o.cliente, o.ciudad, o.fecha_entrega && `fin ${f.fecha(o.fecha_entrega)}`].filter(Boolean).join(' · ')}</div>
         {etapas.length > 0 && (
           <div className="fases-mini">
@@ -28,6 +25,7 @@ export function ProyectoFila({ o, mostrarCliente }) {
             <span className="small muted">{hechas}/{etapas.length} fases{actual ? ` · ${actual.nombre}` : ' · todas terminadas'}</span>
           </div>
         )}
+        <div className="mt-s">{retraso ? <Status estado="retrasado" small /> : <Status estado={o.estado} map={f.ESTADOS_OBRA} small />}</div>
       </div>
       <ChevronRight size={20} className="muted" />
     </Link>
@@ -55,7 +53,7 @@ export default function Cliente() {
           <AvatarCliente nombre={cliente} size={64} />
           <div><h1>{cliente}</h1><p>{f.plural(todas.length, 'proyecto')}{ciudades.length ? ` · ${ciudades.join(', ')}` : ''}</p></div>
         </div>
-        {can('obras.editar') && <button className="btn primary big" onClick={() => setNueva(true)}><Plus size={22} />Nuevo proyecto</button>}
+        {can('obras.editar') && <BotonMas texto="Nuevo proyecto" onClick={() => setNueva(true)} />}
       </div>
       <div className="mb"><Selector filtro titulo="Mostrar proyectos" value={estado} onChange={setEstado} options={[['curso', 'En curso'], ['terminadas', 'Terminados'], ['todas', 'Todos']]} /></div>
       {lista.length ? <div className="lista">{lista.map((o) => <ProyectoFila key={o.id} o={o} />)}</div> : <Empty title="No hay proyectos en este filtro" />}

@@ -52,8 +52,8 @@ export default function Fase() {
     <>
       <Link to={`/obras/${id}`} className="volver"><ChevronLeft size={20} />{e.obra_nombre}</Link>
       <div className="page-head">
-        <div className="row" style={{ gap: 16, alignItems: 'center' }}>
-          <Ring value={pct} size={76} tone={estado === 'retrasado' ? 'bad' : estado === 'terminado' ? 'ok' : undefined} />
+        <div className="row cab-fase" style={{ gap: 16, alignItems: 'center' }}>
+          <Ring value={pct} size={64} tone={estado === 'retrasado' ? 'bad' : estado === 'terminado' ? 'ok' : undefined} />
           <div>
             <div className="row wrap" style={{ gap: 8, marginBottom: 6 }}><span className="code">Fase {e.orden}</span><Status estado={estado} small /></div>
             <h1>{e.nombre}</h1>

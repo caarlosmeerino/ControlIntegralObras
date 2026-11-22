@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Pencil, MapPin, Navigation, CalendarDays, CheckCircle2 } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Tabs, Status, Bar } from '../components/ui.jsx';
+import { Loading, ErrorBox, Tabs, Status, Bar, BotonMas } from '../components/ui.jsx';
 import PiezasProyecto from '../components/PiezasProyecto.jsx';
 import { ArchivosObra } from '../components/Archivos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
@@ -28,12 +28,12 @@ function Fases({ obra, onEditar }) {
               <Link key={e.id} to={`/obras/${obra.id}/fases/${e.id}`} className="lista-fila fase-fila">
                 <span className={`fase-num ${f.ESTADOS[est].tone}`}>{e.completada ? <CheckCircle2 size={16} /> : e.orden}</span>
                 <div className="grow" style={{ minWidth: 0 }}>
-                  <div className="row between" style={{ gap: 8 }}>
-                    <span className="lista-titulo">{e.nombre}</span>
-                    <Status estado={est} small />
-                  </div>
+                  <div className="lista-titulo">{e.nombre}</div>
                   <div className="lista-sub"><CalendarDays size={13} style={{ verticalAlign: -2 }} /> {f.fecha(e.fecha_inicio)} → {f.fecha(e.fecha_fin)}{e.tareas_total ? ` · checklist ${e.tareas_hechas}/${e.tareas_total}` : ''}</div>
-                  {e.tareas_total > 0 && <div className="mt-s"><Bar value={pct} tone={est === 'retrasado' ? 'bad' : pct >= 100 ? 'ok' : ''} /></div>}
+                  <div className="row" style={{ gap: 10, marginTop: 8 }}>
+                    <Status estado={est} small />
+                    {e.tareas_total > 0 && <div className="grow"><Bar value={pct} tone={est === 'retrasado' ? 'bad' : pct >= 100 ? 'ok' : ''} /></div>}
+                  </div>
                 </div>
                 <ChevronRight size={18} className="muted" />
               </Link>
@@ -67,9 +67,9 @@ export default function ObraDetalle() {
           <h1>{o.nombre}</h1>
           <p>{[o.ciudad, o.fecha_inicio && `${f.fecha(o.fecha_inicio)} → ${f.fecha(o.fecha_entrega)}`].filter(Boolean).join(' · ')}</p>
         </div>
-        <div className="page-actions" style={{ width: 'auto' }}>
-          {hayUbicacion && <a className="btn sm maps" href={f.mapsUrl(o)} target="_blank" rel="noopener noreferrer"><Navigation size={15} />Google Maps</a>}
-          {can('obras.editar') && <button className="btn sm" onClick={() => setEdit(true)}><Pencil size={15} />Editar</button>}
+        <div className="acciones-cab">
+          {hayUbicacion && <a className="btn-mas secundario" href={f.mapsUrl(o)} target="_blank" rel="noopener noreferrer" aria-label="Abrir en Google Maps" title="Google Maps"><Navigation size={19} /><span className="txt">Google Maps</span></a>}
+          {can('obras.editar') && <BotonMas texto="Editar" icon={Pencil} onClick={() => setEdit(true)} />}
         </div>
       </div>
 

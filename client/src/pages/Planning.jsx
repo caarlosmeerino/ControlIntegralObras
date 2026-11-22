@@ -40,10 +40,10 @@ export default function Planning() {
           <h1>Semana {S}</h1>
           <p>{diaTxt(lunes)} – {diaTxt(domingo)} {domingo.slice(0, 4)}{A === actual.anio && S === actual.semana ? ' · esta semana' : ''}</p>
         </div>
-        <div className="row" style={{ gap: 6 }}>
-          <button className="btn icon" onClick={() => ir(-1)} aria-label="Semana anterior"><ChevronLeft size={20} /></button>
+        <div className="nav-semana">
+          <button className="btn ghost icon sm" onClick={() => ir(-1)} aria-label="Semana anterior"><ChevronLeft size={22} /></button>
           <button className="btn sm" onClick={() => nav(`/planning/${actual.anio}/${actual.semana}`)}>Hoy</button>
-          <button className="btn icon" onClick={() => ir(1)} aria-label="Semana siguiente"><ChevronRight size={20} /></button>
+          <button className="btn ghost icon sm" onClick={() => ir(1)} aria-label="Semana siguiente"><ChevronRight size={22} /></button>
         </div>
       </div>
 
@@ -81,11 +81,13 @@ export default function Planning() {
               <Link key={e.id} to={`/obras/${e.obra_id}/fases/${e.id}`} className="lista-fila">
                 <span className={`fase-num ${f.ESTADOS[e.estado].tone}`}>{e.completada ? <CheckCircle2 size={16} /> : e.orden}</span>
                 <div className="grow" style={{ minWidth: 0 }}>
-                  <div className="lista-titulo">{e.obra_nombre} · {e.nombre}</div>
+                  <div className="lista-titulo">{e.nombre}</div>
+                  <div className="lista-sub strong" style={{ color: 'var(--text-2)' }}>{e.obra_nombre}</div>
                   <div className="lista-sub">{e.cliente} · {f.fecha(e.fecha_inicio)} → {f.fecha(e.fecha_fin)}{e.tareas_total ? ` · checklist ${e.tareas_hechas}/${e.tareas_total}` : ''}
                     {e.fecha_inicio >= lunes && e.fecha_inicio <= domingo ? ' · empieza esta semana' : ''}{e.fecha_fin >= lunes && e.fecha_fin <= domingo ? ' · termina esta semana' : ''}</div>
+                  <div className="mt-s"><Status estado={e.estado} small /></div>
                 </div>
-                <Status estado={e.estado} small />
+                <ChevronRight size={18} className="muted" />
               </Link>
             ))}
           </div>

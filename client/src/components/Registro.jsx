@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, ChevronRight } from 'lucide-react';
 import { useApp } from '../lib/app.jsx';
 import { get, post, put, del, qs } from '../lib/api.js';
-import { Sheet, Field, Selector, Empty } from './ui.jsx';
+import { Sheet, Field, Selector, Empty, BotonMas } from './ui.jsx';
 import { Lupa } from './iconos.jsx';
 import IconoPieza, { FAMILIAS, GRUPOS, UNIDAD } from './IconoPieza.jsx';
 import * as f from '../lib/format.js';
@@ -123,8 +123,8 @@ export default function Registro() {
   return (
     <>
       <div className="page-head">
-        <div><h1>Registro de piezas</h1><p>Perfiles normalizados con su peso y tus piezas propias. Úsalas en cualquier proyecto.</p></div>
-        {can('piezas.editar') && <button className="btn primary big" onClick={() => setForm({})}><Plus size={22} />Nueva pieza</button>}
+        <div><h1>Piezas</h1></div>
+        {can('piezas.editar') && <BotonMas texto="Nueva pieza" onClick={() => setForm({})} />}
       </div>
       <ListaRegistro recargar={n} onElegir={(p) => (p.personalizada && can('piezas.editar') ? setForm(p) : null)}
         accesorio={(p) => (p.personalizada ? <span className="badge info">Propia</span> : <span className="muted xs">{p.norma}</span>)} />

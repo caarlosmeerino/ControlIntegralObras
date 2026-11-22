@@ -1,7 +1,7 @@
 import { Database, Download, HardDrive, ShieldCheck } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { post } from '../lib/api.js';
-import { Loading, ErrorBox, Kpi, Empty } from '../components/ui.jsx';
+import { Loading, ErrorBox, Kpi, Empty, BotonMas } from '../components/ui.jsx';
 import * as f from '../lib/format.js';
 
 export default function Sistema() {
@@ -13,8 +13,8 @@ export default function Sistema() {
   const backup = async () => { try { const r = await post('/sistema/backup'); toast(r.mensaje); reload(); } catch (e) { toastError(e); } };
   return (
     <>
-      <div className="page-head"><div><h1>Copias y sistema</h1><p>Estado de la base de datos, copias de seguridad automáticas y registro de cambios.</p></div>
-        <div className="page-actions"><button className="btn primary" onClick={backup}><Database />Hacer copia ahora</button></div></div>
+      <div className="page-head"><div><h1>Copias de seguridad</h1></div>
+        <BotonMas texto="Hacer copia ahora" icon={Database} onClick={backup} /></div>
       <div className="grid g4 mb">
         <Kpi icon={Database} label="Base de datos" value={data.db.tamano} sub="PostgreSQL" />
         <Kpi icon={HardDrive} label="Almacenamiento" value={data.almacenamiento === 's3' ? 'S3 / Bucket' : 'Volumen'} tone="idle" sub={`${data.cuentas.archivos} archivos`} />

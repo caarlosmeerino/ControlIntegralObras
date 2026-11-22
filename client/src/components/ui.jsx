@@ -325,3 +325,8 @@ export function Selector({ value, options, onChange, titulo, placeholder = 'Eleg
     </>
   );
 }
+
+/** Acción principal del encabezado: «+» redondo en el móvil, botón con texto en el ordenador */
+export function BotonMas({ texto, onClick, icon: I = Plus }) {
+  return <button type="button" className="btn-mas" onClick={onClick} aria-label={texto} title={texto}><I size={20} strokeWidth={2.4} /><span className="txt">{texto}</span></button>;
+}
