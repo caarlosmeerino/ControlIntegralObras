@@ -72,6 +72,8 @@ function convertir(c) {
 // Si existe GOOGLE_MAPS_API_KEY, las sugerencias salen de Google Maps.
 const GKEY = process.env.GOOGLE_MAPS_API_KEY || '';
 export const usaGoogle = () => !!GKEY;
+// Último resultado de Google (para el diagnóstico del administrador)
+export const estadoGoogle = { ultimo: null, error: null, en: null };
 
 async function google(ruta, { body, campos, sesion } = {}) {
   const ctrl = new AbortController();
@@ -85,11 +87,15 @@ async function google(ruta, { body, campos, sesion } = {}) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      console.warn('[google]', res.status, data?.error?.message || '');
+      const msg = `${res.status} ${data?.error?.status || ''} ${data?.error?.message || ''}`.trim();
+      console.warn('[google]', msg);
+      Object.assign(estadoGoogle, { ultimo: 'error', error: msg, en: new Date().toISOString() });
       throw new Error(`Google ${res.status}`);
     }
+    Object.assign(estadoGoogle, { ultimo: 'ok', error: null, en: new Date().toISOString() });
     return data;
-  } catch {
+  } catch (e) {
+    if (e.name === 'AbortError') Object.assign(estadoGoogle, { ultimo: 'error', error: 'Google no respondió a tiempo', en: new Date().toISOString() });
     throw new HttpError(503, 'Google Maps no responde ahora mismo. Puedes escribir la dirección a mano.');
   } finally { clearTimeout(t); }
 }
@@ -135,7 +141,10 @@ r.get('/', wrap(async (req, res) => {
   const q = String(req.query.q || '').trim();
   if (q.length < 3) return res.json([]);
   if (q.length > 200) throw bad('La búsqueda es demasiado larga.');
-  if (usaGoogle()) return res.json((await sugerenciasGoogle(q, String(req.query.sesion || '').slice(0, 64))).slice(0, 8));
+  if (usaGoogle()) {
+    // Si Google falla (clave mal configurada, sin conexión…) se usan las direcciones oficiales de CartoCiudad
+    try { return res.json((await sugerenciasGoogle(q, String(req.query.sesion || '').slice(0, 64))).slice(0, 8)); } catch { /* sigue con CartoCiudad */ }
+  }
   const data = await pedir(`/candidates?q=${encodeURIComponent(q)}&limit=12`);
   const vistos = new Set();
   const out = [];
@@ -169,3 +178,9 @@ r.get('/detalle', wrap(async (req, res) => {
 }));
 
 export default r;
+
+/** Prueba la clave de Google Maps (solo administrador, desde «Copias de seguridad») */
+export async function probarGoogle() {
+  if (!GKEY) return { configurada: false };
+  try { await sugerenciasGoogle('Madrid'); return { configurada: true, ok: true }; } catch { return { configurada: true, ok: false, error: estadoGoogle.error || 'Sin respuesta' }; }
+}
