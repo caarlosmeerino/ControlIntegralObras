@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { ChevronRight, CalendarDays } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { ChevronRight, Plus, AlertTriangle, FolderKanban } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Empty, BotonMas, Cabecera, IconoIniciales } from '../components/ui.jsx';
+import { Loading, ErrorBox, Empty } from '../components/ui.jsx';
 import { Lupa } from '../components/iconos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import Calendario from '../components/Calendario.jsx';
@@ -11,6 +11,8 @@ import { ACTIVAS, urlCliente, estadoEtapa, obraRetrasada } from '../lib/obra.js'
 import * as f from '../lib/format.js';
 
 const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const saludo = () => { const h = new Date().getHours(); return h < 14 ? 'Buenos días' : h < 21 ? 'Buenas tardes' : 'Buenas noches'; };
+const fechaLarga = () => { const t = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); return t[0].toUpperCase() + t.slice(1); };
 const dias = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 
 /** Próximo hito de una obra: fase con retraso, fase que termina o fase que empieza */
@@ -26,8 +28,10 @@ function proximoHito(o, hoy) {
 }
 
 export default function Inicio() {
-  const { can } = useApp();
+  const { can, user } = useApp();
   const nav = useNavigate();
+  const [params, setParams] = useSearchParams();
+  useEffect(() => { if (params.get('nuevo') === '1') { if (can('obras.editar')) setNueva(true); setParams({}, { replace: true }); } }, [params]);
   const { data, error, loading, reload } = useData('/obras');
   const [q, setQ] = useState('');
   const [nueva, setNueva] = useState(false);
@@ -50,10 +54,18 @@ export default function Inicio() {
   if (error) return <ErrorBox error={error} retry={reload} />;
   return (
     <>
-      <Cabecera icono={<IconoIniciales icon={CalendarDays} color="linear-gradient(180deg,#ff6b6b,#e5383b)" />} titulo="Planning"
-        sub={f.plural(activas.length, 'proyecto en curso', 'proyectos en curso')}
-        estado={activas.filter(obraRetrasada).length ? <span className="badge bad">{activas.filter(obraRetrasada).length} con retraso</span> : <span className="badge ok">Todo al día</span>}
-        acciones={can('obras.editar') && <BotonMas texto="Nuevo proyecto" onClick={() => setNueva(true)} />} />
+      <section className="saludo">
+        <div className="saludo-txt">
+          <span className="saludo-pre">Planning</span>
+          <h1>{saludo()}, {String(user.nombre).split(' ')[0]}</h1>
+          <p>{fechaLarga()}</p>
+        </div>
+        <div className="saludo-datos">
+          <span><FolderKanban size={17} />{f.plural(activas.length, 'proyecto en curso', 'proyectos en curso')}</span>
+          {activas.filter(obraRetrasada).length > 0 && <span><AlertTriangle size={17} />{activas.filter(obraRetrasada).length} con retraso</span>}
+        </div>
+        {can('obras.editar') && <button type="button" className="saludo-btn" onClick={() => setNueva(true)}><Plus size={18} />Nuevo proyecto</button>}
+      </section>
 
       <Calendario />
 
