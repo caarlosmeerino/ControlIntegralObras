@@ -91,7 +91,7 @@ export default function ObraDetalle() {
           </div>
         </div>
       )}
-      {tab === 'piezas' && <PiezasProyecto obraId={o.id} />}
+      {tab === 'piezas' && <PiezasProyecto obraId={o.id} etapas={o.etapas || []} />}
       {tab === 'planos' && <ArchivosObra obraId={o.id} solo={['plano']} />}
       {tab === 'docs' && <ArchivosObra obraId={o.id} solo={['documento', 'foto']} />}
       {edit && <ObraForm obra={o} onClose={() => setEdit(false)} onSaved={reload} />}

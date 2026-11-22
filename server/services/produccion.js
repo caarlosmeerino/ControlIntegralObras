@@ -66,8 +66,9 @@ export function estadoPieza(pieza, fases, avMap, today = hoy()) {
 
 export async function piezasConEstado(db, where = 'TRUE', params = []) {
   const { rows: piezas } = await db.query(
-    `SELECT p.*, o.codigo AS obra_codigo, o.nombre AS obra_nombre, cp.familia, cp.designacion AS catalogo_nombre, cp.unidad AS catalogo_unidad, cp.peso AS catalogo_peso
-     FROM piezas p JOIN obras o ON o.id=p.obra_id LEFT JOIN catalogo_piezas cp ON cp.id=p.catalogo_id
+    `SELECT p.*, o.codigo AS obra_codigo, o.nombre AS obra_nombre, cp.familia, cp.designacion AS catalogo_nombre, cp.unidad AS catalogo_unidad, cp.peso AS catalogo_peso,
+       et.nombre AS etapa_nombre, et.orden AS etapa_orden
+     FROM piezas p JOIN obras o ON o.id=p.obra_id LEFT JOIN catalogo_piezas cp ON cp.id=p.catalogo_id LEFT JOIN etapas et ON et.id=p.etapa_id
      WHERE ${where} ORDER BY o.codigo, p.marca`, params);
   if (!piezas.length) return [];
   const obraIds = [...new Set(piezas.map((p) => p.obra_id))];

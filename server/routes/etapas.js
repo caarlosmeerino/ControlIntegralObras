@@ -27,7 +27,7 @@ r.get('/:id', requirePerm('obras.ver'), wrap(async (req, res) => {
   if (!e) throw notFound('No se ha encontrado la fase.');
   const tareas = await many(`SELECT t.*, u.nombre AS hecha_por_nombre FROM etapa_tareas t LEFT JOIN usuarios u ON u.id=t.hecha_por
     WHERE t.etapa_id=$1 ORDER BY t.orden, t.id`, [e.id]);
-  const hermanas = await many('SELECT id, orden, nombre FROM etapas WHERE obra_id=$1 ORDER BY orden', [e.obra_id]);
+  const hermanas = await many('SELECT id, orden, nombre, fecha_inicio, fecha_fin FROM etapas WHERE obra_id=$1 ORDER BY orden', [e.obra_id]);
   res.json({ ...e, tareas, hermanas });
 }));
 

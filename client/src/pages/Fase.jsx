@@ -5,6 +5,7 @@ import { useApp, useData } from '../lib/app.jsx';
 import { post, put, del } from '../lib/api.js';
 import { Loading, ErrorBox, Status, Ring, Cabecera } from '../components/ui.jsx';
 import { estadoEtapa } from '../lib/obra.js';
+import PiezasProyecto from '../components/PiezasProyecto.jsx';
 import * as f from '../lib/format.js';
 
 const dias = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
@@ -83,6 +84,8 @@ export default function Fase() {
           </form>
         )}
       </div>
+
+      <div className="mb"><PiezasProyecto obraId={e.obra_id} etapaId={e.id} etapas={e.hermanas || []} /></div>
 
       {editar && (e.completada ? (
         <button className="btn xl" disabled={busy} onClick={() => completar(false)}><RotateCcw size={20} />Reabrir fase</button>

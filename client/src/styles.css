@@ -777,3 +777,12 @@ input[type="date"].input { -webkit-appearance: none; appearance: none; display: 
   .cab-titulo { font-size: 1.45rem; }
   .icono-cab { width: 64px; height: 64px; font-size: 1.35rem; }
 }
+
+/* ---------- Menos sombreado: tarjetas planas ---------- */
+:root { --shadow: none; }
+.obra-card:hover { box-shadow: none; }
+.seg button.on, .tabs button.on { box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+.sheet, .action-sheet, .picker, .toast { box-shadow: none; }
+.grupo-piezas + .grupo-piezas { margin-top: 14px; }
+.grupo-cab { display: flex; justify-content: space-between; padding: 6px 2px; font-size: .8rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .03em; border-bottom: .5px solid var(--sep); }
+.pieza-fila .lista-titulo, .pieza-fila .lista-sub { display: block; }
