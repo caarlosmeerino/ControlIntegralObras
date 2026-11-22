@@ -872,3 +872,35 @@ input[type="date"].input { -webkit-appearance: none; appearance: none; display: 
 @media (max-width: 760px) and (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tabbar { background: rgb(28 28 30 / .94); } }
 button.lista-fila { width: 100%; border: 0; border-bottom: .5px solid var(--sep); background: transparent; cursor: pointer; font: inherit; text-align: left; }
 button.lista-fila:last-child { border-bottom: 0; }
+
+/* ---------- Estilo más sobrio (menos "Apple") ---------- */
+.barra { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid var(--sep); }
+.barra-fila { height: 60px; }
+.barra-nav { background: transparent; padding: 0; gap: 6px; border-radius: 0; height: 60px; align-items: stretch; }
+.barra-link { height: auto; border-radius: 0; padding: 0 14px; position: relative; color: var(--text-2); }
+.barra-link:hover { background: transparent; color: var(--text); }
+.barra-link.on { background: transparent; box-shadow: none; color: var(--accent); }
+.barra-link.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--accent); }
+.barra .app-icon { width: 32px; height: 32px; border-radius: 8px; }
+.mc-avatar, .mc-avatar.peq, .mc-avatar.mini { aspect-ratio: 1 / 1; flex: none; border-radius: 50%; padding: 0; line-height: 1; }
+.mc-avatar.peq { width: 34px; height: 34px; min-width: 34px; }
+.avatar-menu { padding: 4px 10px 4px 4px; border-radius: 10px; }
+/* Cabeceras más ligeras */
+.cab-tarjeta { border-radius: 14px; border: 1px solid var(--sep); padding: 14px 16px; }
+.icono-cab { width: 44px; height: 44px; border-radius: 11px; font-size: 1rem; }
+.cab-tarjeta .avatar-cliente { width: 44px !important; height: 44px !important; font-size: .95rem !important; }
+.cab-tarjeta .ring { transform: scale(.8); transform-origin: center; }
+.cab-titulo { font-size: 1.12rem; font-weight: 600; }
+.card, .lista, .resumen-semana > div, .calendario { border: 1px solid var(--sep); }
+.card, .lista { border-radius: 14px; }
+.lista-plana { border: 0; }
+@media (min-width: 981px) {
+  .icono-cab { width: 48px; height: 48px; font-size: 1.05rem; }
+  .cab-titulo { font-size: 1.3rem; }
+}
+@media (max-width: 760px) {
+  .barra-fila { height: 52px; }
+  .tabbar { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; border-top: 1px solid var(--sep); }
+  :root[data-theme="dark"] .tabbar { background: var(--surface); }
+}
+@media (max-width: 760px) and (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tabbar { background: var(--surface); } }
