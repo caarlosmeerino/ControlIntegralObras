@@ -14,13 +14,20 @@ const conTareas = `SELECT e.*, o.codigo AS obra_codigo, o.nombre AS obra_nombre,
   (SELECT COUNT(*)::int FROM etapa_tareas t WHERE t.etapa_id=e.id AND t.hecha) AS tareas_hechas
   FROM etapas e JOIN obras o ON o.id=e.obra_id LEFT JOIN usuarios u ON u.id=e.completada_por`;
 
-// Planning: fases que se solapan con un rango de fechas
+// Planning: fases que se solapan con un rango de fechas, con sus tareas pendientes.
+// Si la semana es la actual o futura, se añaden las fases atrasadas sin terminar (arrastradas).
 r.get('/planning', requirePerm('obras.ver'), wrap(async (req, res) => {
   const desde = date(req.query.desde, 'desde'); const hasta = date(req.query.hasta, 'hasta');
   if (!desde || !hasta) throw bad('Indica el rango de fechas.');
-  res.json(await many(`${conTareas}
+  const etapas = await many(`${conTareas}
     WHERE o.propietario_id=$3 AND o.estado NOT IN ('cancelada') AND COALESCE(e.fecha_inicio, e.fecha_fin) <= $2 AND COALESCE(e.fecha_fin, e.fecha_inicio) >= $1
-    ORDER BY COALESCE(e.fecha_inicio, e.fecha_fin), o.nombre, e.orden`, [desde, hasta, req.user.id]));
+    ORDER BY COALESCE(e.fecha_inicio, e.fecha_fin), o.nombre, e.orden`, [desde, hasta, req.user.id]);
+  const arrastradas = await many(`${conTareas}
+    WHERE o.propietario_id=$2 AND o.estado NOT IN ('cancelada','terminada') AND NOT e.completada AND e.fecha_fin < $1 AND $3::date >= CURRENT_DATE
+    ORDER BY e.fecha_fin, o.nombre, e.orden`, [desde, req.user.id, hasta]);
+  const todas = [...etapas, ...arrastradas.map((e) => ({ ...e, arrastrada: true }))];
+  const pend = todas.length ? await many(`SELECT id, etapa_id, texto FROM etapa_tareas WHERE etapa_id = ANY($1) AND NOT hecha ORDER BY orden, id`, [todas.map((e) => e.id)]) : [];
+  res.json(todas.map((e) => ({ ...e, pendientes: pend.filter((t) => t.etapa_id === e.id) })));
 }));
 
 r.get('/:id', requirePerm('obras.ver'), wrap(async (req, res) => {

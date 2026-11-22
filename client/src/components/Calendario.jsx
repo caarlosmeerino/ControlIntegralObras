@@ -42,7 +42,7 @@ export default function Calendario() {
   for (let l = lunes0; l <= ultimo; l = masDias(l, 7)) semanas.push(l);
   const hasta = masDias(semanas[semanas.length - 1], 6);
   const { data } = useData(`/etapas/planning${qs({ desde: lunes0, hasta })}`);
-  const etapas = useMemo(() => (data || []).map((e) => ({ ...e, estado: estadoEtapa(e) })), [data]);
+  const etapas = useMemo(() => (data || []).filter((e) => !e.arrastrada).map((e) => ({ ...e, estado: estadoEtapa(e) })), [data]);
   const mover = (n) => { const d = new Date(Date.UTC(anio, m - 1 + n, 1)); setMes(d.toISOString().slice(0, 7)); };
 
   return (
