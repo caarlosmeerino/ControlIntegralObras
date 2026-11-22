@@ -8,10 +8,8 @@ import * as f from '../lib/format.js';
 
 /** Perfiles que se ofrecen al crear usuarios (los antiguos siguen funcionando) */
 export const PERFILES = [
-  { value: 'admin', label: 'Administrador', sub: 'Todo, incluido crear usuarios y copias de seguridad.' },
-  { value: 'director', label: 'Gestor', sub: 'Crea y edita proyectos, fases, piezas y documentos.' },
-  { value: 'jefe_taller', label: 'Encargado', sub: 'Ve todo, marca checklists, confirma fases y sube documentos.' },
-  { value: 'operario', label: 'Solo consulta', sub: 'Ve proyectos, planning y piezas sin modificar nada.' },
+  { value: 'director', label: 'Usuario', sub: 'Tiene su propia aplicación: sus proyectos, empleados y piezas. Empieza vacía.' },
+  { value: 'admin', label: 'Administrador', sub: 'Igual que un usuario y además puede crear usuarios y hacer copias de seguridad.' },
 ];
 
 const generar = () => {

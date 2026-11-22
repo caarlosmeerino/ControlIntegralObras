@@ -1,7 +1,7 @@
 // Permisos por perfil. El servidor es la autoridad: cada ruta exige uno.
 export const ROLES = {
   admin: 'Administrador',
-  director: 'Gestor',
+  director: 'Usuario',
   jefe_taller: 'Encargado',
   encargado_montaje: 'Encargado de montaje',
   operario: 'Solo consulta',

@@ -15,18 +15,13 @@ import { programarTareas } from './services/tareas.js';
 import authR from './routes/auth.js';
 import usuariosR from './routes/usuarios.js';
 import obrasR from './routes/obras.js';
-import fasesR from './routes/fases.js';
 import piezasR from './routes/piezas.js';
-import panelR from './routes/panel.js';
-import personalR from './routes/personal.js';
-import montajeR from './routes/montaje.js';
 import archivosR from './routes/archivos.js';
-import costesR from './routes/costes.js';
-import informesR from './routes/informes.js';
 import sistemaR from './routes/sistema.js';
 import direccionesR from './routes/direcciones.js';
 import catalogoR, { sembrarCatalogo } from './routes/catalogo.js';
 import etapasR from './routes/etapas.js';
+import { asignarSinDueño } from './propiedad.js';
 import empleadosR from './routes/empleados.js';
 
 const app = express();
@@ -53,19 +48,13 @@ app.use('/api/auth', authR);
 app.use('/api', requireAuth);
 app.use('/api/usuarios', usuariosR);
 app.use('/api/obras', obrasR);
-app.use('/api/fases', fasesR);
 app.use('/api/piezas', piezasR);
-app.use('/api/personal', personalR);
-app.use('/api/montaje', montajeR);
 app.use('/api/archivos', archivosR);
-app.use('/api/costes', costesR);
-app.use('/api/informes', informesR);
 app.use('/api/sistema', sistemaR);
 app.use('/api/direcciones', direccionesR);
 app.use('/api/catalogo', catalogoR);
 app.use('/api/etapas', etapasR);
 app.use('/api/empleados', empleadosR);
-app.use('/api', panelR);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 app.use(errorHandler);
 
@@ -90,6 +79,7 @@ const start = async () => {
     const { sembrar } = await import('../scripts/seed.js');
     await sembrar({ log: (m) => console.log('[demo]', m) }).catch((e) => console.error('[demo] no se pudieron cargar:', e.message));
   }
+  await asignarSinDueño(pool).catch((e) => console.warn('[propietarios]', e.message));
   programarTareas();
   app.listen(config.port, () => console.log(`[servidor] escuchando en el puerto ${config.port}`));
 };

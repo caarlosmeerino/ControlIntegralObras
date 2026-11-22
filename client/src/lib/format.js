@@ -48,7 +48,7 @@ export const ESTADOS_OBRA = {
 export const SECCIONES = { corte: 'Corte', armado: 'Armado', soldadura: 'Soldadura', pintura: 'Pintura', montaje: 'Montaje', calidad: 'Calidad', expedicion: 'Expedición', oficina: 'Oficina' };
 export const ELEMENTOS = { pilar: 'Pilar', viga: 'Viga', cercha: 'Cercha', correa: 'Correa', arriostramiento: 'Arriostramiento', placa: 'Placa', escalera: 'Escalera', barandilla: 'Barandilla', forjado: 'Forjado', otro: 'Otro' };
 export const AMBITOS = { oficina: 'Oficina', taller: 'Taller', obra: 'Obra' };
-export const ROLES = { admin: 'Administrador', director: 'Gestor', jefe_taller: 'Encargado', encargado_montaje: 'Encargado de montaje', operario: 'Solo consulta', administracion: 'Administración' };
+export const ROLES = { admin: 'Administrador', director: 'Usuario', jefe_taller: 'Encargado', encargado_montaje: 'Encargado de montaje', operario: 'Solo consulta', administracion: 'Administración' };
 // Colores de fase (para barras apiladas de ubicación)
 export const COLOR_FASE = ['#c7c7cc', '#aeaeb2', '#64d2ff', '#0a84ff', '#5e5ce6', '#bf5af2', '#ff9f0a', '#30d158', '#248a3d', '#8e8e93', '#636366'];
 export const m2 = (v) => (v == null ? '—' : `${nf(0, 2).format(Number(v))} m²`);

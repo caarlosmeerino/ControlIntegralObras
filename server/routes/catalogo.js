@@ -13,7 +13,7 @@ export async function sembrarCatalogo(pool) {
   if (c.n >= CATALOGO.length) return;
   for (const p of CATALOGO) {
     await pool.query(`INSERT INTO catalogo_piezas (familia, designacion, unidad, peso, dimensiones, norma) VALUES ($1,$2,$3,$4,$5,$6)
-      ON CONFLICT (familia, designacion) DO NOTHING`, [p.familia, p.designacion, p.unidad, p.peso, p.dimensiones, p.norma]);
+      ON CONFLICT (familia, designacion) WHERE NOT personalizada DO NOTHING`, [p.familia, p.designacion, p.unidad, p.peso, p.dimensiones, p.norma]);
   }
   console.log(`[catálogo] ${CATALOGO.length} piezas de la metalurgia cargadas`);
 }
@@ -21,14 +21,14 @@ export async function sembrarCatalogo(pool) {
 // Número de piezas por tipo (para las fichas del registro)
 r.get('/familias', requirePerm('piezas.ver'), wrap(async (req, res) => {
   const filas = await many("SELECT familia, COUNT(*)::int AS n FROM catalogo_piezas WHERE NOT personalizada GROUP BY familia");
-  const { n } = await one('SELECT COUNT(*)::int AS n FROM catalogo_piezas WHERE personalizada');
+  const { n } = await one('SELECT COUNT(*)::int AS n FROM catalogo_piezas WHERE personalizada AND propietario_id=$1', [req.user.id]);
   res.json([...filas, { familia: 'propia', n }]);
 }));
 
 r.get('/', requirePerm('piezas.ver'), wrap(async (req, res) => {
   const t = String(req.query.q || '').trim();
-  const params = [];
-  const cond = ['TRUE'];
+  const params = [req.user.id];
+  const cond = ['(NOT personalizada OR propietario_id=$1)'];
   if (req.query.familia) { params.push(req.query.familia); cond.push(`familia = $${params.length}`); }
   if (t) {
     // «ipe300», «IPE 300», «tubo 100x100» → buscar sin espacios ni puntuación
@@ -54,14 +54,14 @@ function leer(b) {
 // Piezas propias (las normalizadas no se pueden cambiar)
 r.post('/', requirePerm('piezas.editar'), wrap(async (req, res) => {
   const p = leer(req.body);
-  const ex = await one('SELECT * FROM catalogo_piezas WHERE familia=$1 AND lower(designacion)=lower($2)', [p.familia, p.designacion]);
+  const ex = await one(`SELECT * FROM catalogo_piezas WHERE familia=$1 AND lower(designacion)=lower($2) AND (NOT personalizada OR propietario_id=$3)`, [p.familia, p.designacion, req.user.id]);
   if (ex) return res.json(ex);
-  res.status(201).json(await one(`INSERT INTO catalogo_piezas (familia, designacion, unidad, peso, dimensiones, norma, personalizada)
-    VALUES ($1,$2,$3,$4,$5,$6,true) RETURNING *`, [p.familia, p.designacion, p.unidad, p.peso, p.dimensiones, p.norma]));
+  res.status(201).json(await one(`INSERT INTO catalogo_piezas (familia, designacion, unidad, peso, dimensiones, norma, personalizada, propietario_id)
+    VALUES ($1,$2,$3,$4,$5,$6,true,$7) RETURNING *`, [p.familia, p.designacion, p.unidad, p.peso, p.dimensiones, p.norma, req.user.id]));
 }));
 
 r.put('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
-  const cur = await one('SELECT * FROM catalogo_piezas WHERE id=$1', [req.params.id]);
+  const cur = await one('SELECT * FROM catalogo_piezas WHERE id=$1 AND (NOT personalizada OR propietario_id=$2)', [req.params.id, req.user.id]);
   if (!cur) throw notFound('No se ha encontrado la pieza.');
   if (!cur.personalizada) throw bad('Las piezas normalizadas no se pueden modificar. Crea una pieza propia.');
   const p = leer({ ...cur, ...req.body });
@@ -70,7 +70,7 @@ r.put('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
 }));
 
 r.delete('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
-  const cur = await one('SELECT * FROM catalogo_piezas WHERE id=$1', [req.params.id]);
+  const cur = await one('SELECT * FROM catalogo_piezas WHERE id=$1 AND (NOT personalizada OR propietario_id=$2)', [req.params.id, req.user.id]);
   if (!cur) throw notFound();
   if (!cur.personalizada) throw bad('Las piezas normalizadas no se pueden eliminar.');
   await q('DELETE FROM catalogo_piezas WHERE id=$1', [cur.id]);

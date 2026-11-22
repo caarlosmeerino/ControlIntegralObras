@@ -5,6 +5,7 @@ import { many, one, q, tx } from '../db.js';
 import { wrap, bad, notFound, num, str, date } from '../http.js';
 import { requirePerm } from '../auth.js';
 import { audit } from '../audit.js';
+import { obraPropia, idsObrasPropias, etapaPropia, tareaPropia, piezaPropia, trabajadorPropio } from '../propiedad.js';
 import { piezasConEstado, piezaConEstado, registrarAvance, completarHasta } from '../services/produccion.js';
 import { config } from '../config.js';
 
@@ -12,7 +13,7 @@ const r = Router();
 
 async function comprobarEtapa(etapaId, obraId) {
   if (!etapaId) return;
-  const e = await one('SELECT obra_id FROM etapas WHERE id=$1', [etapaId]);
+  const e = await one('SELECT obra_id FROM etapas WHERE id=$1', [etapaId]); // la obra ya se ha comprobado que es del usuario
   if (!e || e.obra_id !== Number(obraId)) throw bad('La fase elegida no pertenece a este proyecto.');
 }
 export const ELEMENTOS = ['pilar', 'viga', 'cercha', 'correa', 'arriostramiento', 'placa', 'escalera', 'barandilla', 'forjado', 'otro'];
@@ -34,7 +35,7 @@ function leer(b) {
 }
 
 r.get('/', requirePerm('piezas.ver'), wrap(async (req, res) => {
-  const cond = ['TRUE']; const p = [];
+  const cond = ['o.propietario_id=$1']; const p = [req.user.id];
   if (req.query.obra_id) { p.push(Number(req.query.obra_id)); cond.push(`p.obra_id=$${p.length}`); }
   if (req.query.etapa_id) { p.push(Number(req.query.etapa_id)); cond.push(`p.etapa_id=$${p.length}`); }
   if (req.query.q) { p.push(`%${req.query.q}%`); cond.push(`(p.marca ILIKE $${p.length} OR p.plano ILIKE $${p.length} OR p.perfil ILIKE $${p.length} OR o.codigo ILIKE $${p.length})`); }
@@ -50,6 +51,7 @@ r.get('/', requirePerm('piezas.ver'), wrap(async (req, res) => {
 
 r.post('/', requirePerm('piezas.editar'), wrap(async (req, res) => {
   const obraId = num(req.body.obra_id, 'obra', { int: true });
+  await obraPropia(req, obraId);
   const d = leer(req.body);
   await comprobarEtapa(d.etapa_id, obraId);
   const n = await one(
@@ -62,6 +64,7 @@ r.post('/', requirePerm('piezas.editar'), wrap(async (req, res) => {
 // Importación masiva desde texto CSV/Excel pegado (marca;elemento;perfil;plano;peso;cantidad;observaciones)
 r.post('/importar', requirePerm('piezas.editar'), wrap(async (req, res) => {
   const obraId = num(req.body.obra_id, 'obra', { int: true });
+  await obraPropia(req, obraId);
   const texto = String(req.body.texto || '').trim();
   if (!texto) throw bad('Pega las filas de piezas que quieras importar.');
   const lineas = texto.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -99,12 +102,13 @@ r.post('/importar', requirePerm('piezas.editar'), wrap(async (req, res) => {
 }));
 
 r.get('/qr/:token', requirePerm('piezas.ver'), wrap(async (req, res) => {
-  const p = await one('SELECT id FROM piezas WHERE qr_token=$1', [req.params.token]);
+  const p = await one('SELECT p.id FROM piezas p JOIN obras o ON o.id=p.obra_id WHERE p.qr_token=$1 AND o.propietario_id=$2', [req.params.token, req.user.id]);
   if (!p) throw notFound('Este código QR no corresponde a ninguna pieza.');
   res.json({ id: p.id });
 }));
 
 r.get('/:id', requirePerm('piezas.ver'), wrap(async (req, res) => {
+  await piezaPropia(req, req.params.id);
   const p = await piezaConEstado({ query: q }, Number(req.params.id));
   const [movimientos, historial, archivos] = await Promise.all([
     many(`SELECT m.*, f.nombre AS fase, f.clave, u.nombre AS usuario, t.nombre AS trabajador FROM movimientos m
@@ -118,8 +122,7 @@ r.get('/:id', requirePerm('piezas.ver'), wrap(async (req, res) => {
 
 r.put('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
   const id = Number(req.params.id);
-  const cur = await one('SELECT * FROM piezas WHERE id=$1', [id]);
-  if (!cur) throw notFound('No se ha encontrado la pieza.');
+  const cur = await piezaPropia(req, id);
   const d = leer({ ...cur, ...req.body });
   await comprobarEtapa(d.etapa_id, cur.obra_id);
   const { c } = await one('SELECT COALESCE(MAX(cantidad),0) c FROM pieza_avance WHERE pieza_id=$1', [id]);
@@ -141,8 +144,7 @@ r.put('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
 }));
 
 r.delete('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
-  const p = await one('SELECT * FROM piezas WHERE id=$1', [req.params.id]);
-  if (!p) throw notFound('No se ha encontrado la pieza.');
+  const p = await piezaPropia(req, req.params.id);
   const { n } = await one('SELECT COUNT(*)::int n FROM movimientos WHERE pieza_id=$1', [p.id]);
   if (n > 0 && req.user.rol !== 'admin') throw bad(`La pieza ${p.marca} tiene ${n} movimientos registrados. Solo un administrador puede eliminarla.`);
   await q('DELETE FROM piezas WHERE id=$1', [p.id]);
@@ -152,6 +154,7 @@ r.delete('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
 
 // ---- Avances ----
 r.post('/:id/avance', wrap(async (req, res) => {
+  await piezaPropia(req, req.params.id);
   const b = req.body;
   const out = await tx((db) => registrarAvance(db, {
     piezaId: Number(req.params.id), faseId: b.fase_id || null,
@@ -169,6 +172,7 @@ r.post('/lote/avance', wrap(async (req, res) => {
   const ids = (req.body.ids || []).map(Number).filter(Boolean);
   if (!ids.length) throw bad('Selecciona al menos una pieza.');
   if (ids.length > 500) throw bad('Máximo 500 piezas por operación.');
+  for (const id of ids) await piezaPropia(req, id);
   const resultado = await tx(async (db) => {
     let kg = 0, movs = 0;
     for (const id of ids) {
@@ -193,14 +197,14 @@ r.post('/lote/avance', wrap(async (req, res) => {
 
 // ---- QR ----
 r.get('/:id/qr.svg', requirePerm('piezas.ver'), wrap(async (req, res) => {
-  const p = await one('SELECT qr_token FROM piezas WHERE id=$1', [req.params.id]);
-  if (!p) throw notFound();
+  const p = await piezaPropia(req, req.params.id);
   const base = config.publicUrl || `${req.protocol}://${req.get('host')}`;
   const svg = await QRCode.toString(`${base}/q/${p.qr_token}`, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' });
   res.type('image/svg+xml').set('Cache-Control', 'private, max-age=86400').send(svg);
 }));
 
 r.get('/etiquetas/:obraId', requirePerm('piezas.ver'), wrap(async (req, res) => {
+  await obraPropia(req, req.params.obraId);
   const ids = req.query.ids ? String(req.query.ids).split(',').map(Number) : null;
   const piezas = await many(
     `SELECT p.id, p.marca, p.elemento, p.perfil, p.plano, p.peso_unitario_kg, p.cantidad, p.qr_token, o.codigo, o.nombre AS obra

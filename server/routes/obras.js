@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { many, one, q, tx } from '../db.js';
 import { wrap, bad, notFound, num, str, date, oneOf } from '../http.js';
 import { requirePerm } from '../auth.js';
+import { obraPropia, idsObrasPropias, etapaPropia, tareaPropia, piezaPropia, trabajadorPropio } from '../propiedad.js';
 import { audit } from '../audit.js';
 import { resolverCiudad } from '../municipios.js';
 import { resumenObras, resumenObra, crearFasesPorDefecto } from '../services/produccion.js';
@@ -62,7 +63,7 @@ const COLS = ['codigo', 'nombre', 'cliente', 'direccion', 'ciudad', 'provincia',
   'kg_previstos_montaje', 'm2_previstos', 'ml_previstos', 'codigo_postal', 'lat', 'lng', 'estado', 'observaciones'];
 
 r.get('/', requirePerm('obras.ver'), wrap(async (req, res) => {
-  let obras = await resumenObras({ query: q });
+  let obras = await resumenObras({ query: q }, await idsObrasPropias(req));
   if (req.query.estado) obras = obras.filter((o) => o.estado === req.query.estado);
   if (req.query.activas === '1') obras = obras.filter((o) => ['planificada', 'en_curso', 'pausada'].includes(o.estado));
   res.json(obras);
@@ -75,11 +76,11 @@ r.post('/', requirePerm('obras.editar'), wrap(async (req, res) => {
     if (!o.codigo) {
       // Código automático: OB-AAAA-NNN
       const y = new Date().getFullYear();
-      const { rows: [m] } = await db.query(`SELECT COALESCE(MAX(substring(codigo from '^OB-${y}-(\\d+)$')::int), 0) + 1 AS n FROM obras`);
+      const { rows: [m] } = await db.query(`SELECT COALESCE(MAX(substring(codigo from '^OB-${y}-(\\d+)$')::int), 0) + 1 AS n FROM obras WHERE propietario_id=$1`, [req.user.id]);
       o.codigo = `OB-${y}-${String(m.n).padStart(3, '0')}`;
     }
     const { rows: [n] } = await db.query(
-      `INSERT INTO obras (${COLS.join(',')}) VALUES (${COLS.map((_, i) => `$${i + 1}`).join(',')}) RETURNING *`, COLS.map((c) => o[c]));
+      `INSERT INTO obras (${COLS.join(',')}, propietario_id) VALUES (${COLS.map((_, i) => `$${i + 1}`).join(',')}, $${COLS.length + 1}) RETURNING *`, [...COLS.map((c) => o[c]), req.user.id]);
     await crearFasesPorDefecto(db, n.id);
     await guardarEtapas(db, n.id, etapas);
     await audit(db, { entidad: 'obra', entidadId: n.id, obraId: n.id, accion: 'crear', detalle: `Proyecto ${n.codigo} creado con ${etapas.length} fase(s)`, usuarioId: req.user.id });
@@ -89,13 +90,13 @@ r.post('/', requirePerm('obras.editar'), wrap(async (req, res) => {
 }));
 
 r.get('/:id', requirePerm('obras.ver'), wrap(async (req, res) => {
+  await obraPropia(req, req.params.id);
   res.json(await resumenObra({ query: q }, req.params.id));
 }));
 
 r.put('/:id', requirePerm('obras.editar'), wrap(async (req, res) => {
   const id = Number(req.params.id);
-  const cur = await one('SELECT * FROM obras WHERE id=$1', [id]);
-  if (!cur) throw notFound('No se ha encontrado la obra.');
+  const cur = await obraPropia(req, id);
   const o = leerObra({ ...cur, ...req.body });
   if (!o.codigo) o.codigo = cur.codigo;
   const etapas = leerEtapas(req.body.etapas);
@@ -111,7 +112,8 @@ r.put('/:id', requirePerm('obras.editar'), wrap(async (req, res) => {
   res.json(await resumenObra({ query: q }, id));
 }));
 
-r.delete('/:id', requirePerm('usuarios.admin'), wrap(async (req, res) => {
+r.delete('/:id', requirePerm('obras.editar'), wrap(async (req, res) => {
+  await obraPropia(req, req.params.id);
   const o = await one('DELETE FROM obras WHERE id=$1 RETURNING codigo', [req.params.id]);
   if (!o) throw notFound('No se ha encontrado la obra.');
   await audit({ query: q }, { entidad: 'obra', entidadId: Number(req.params.id), accion: 'eliminar', detalle: `Obra ${o.codigo} eliminada`, usuarioId: req.user.id });
@@ -119,12 +121,14 @@ r.delete('/:id', requirePerm('usuarios.admin'), wrap(async (req, res) => {
 }));
 
 r.get('/:id/historial', requirePerm('obras.ver'), wrap(async (req, res) => {
+  await obraPropia(req, req.params.id);
   res.json(await many(
     `SELECT h.*, u.nombre AS usuario FROM historial h LEFT JOIN usuarios u ON u.id=h.usuario_id
      WHERE h.obra_id=$1 ORDER BY h.fecha DESC LIMIT 300`, [req.params.id]));
 }));
 
 r.get('/:id/movimientos', requirePerm('obras.ver'), wrap(async (req, res) => {
+  await obraPropia(req, req.params.id);
   res.json(await many(
     `SELECT m.*, p.marca, f.nombre AS fase, f.clave, u.nombre AS usuario, t.nombre AS trabajador
      FROM movimientos m JOIN piezas p ON p.id=m.pieza_id JOIN obra_fases f ON f.id=m.obra_fase_id

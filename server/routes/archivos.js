@@ -6,6 +6,7 @@ import { many, one, q } from '../db.js';
 import { wrap, bad, notFound, str } from '../http.js';
 import { requirePerm } from '../auth.js';
 import { audit } from '../audit.js';
+import { obraPropia, idsObrasPropias, etapaPropia, tareaPropia, piezaPropia, trabajadorPropio } from '../propiedad.js';
 import { storage } from '../storage.js';
 import { config } from '../config.js';
 import { can } from '../permissions.js';
@@ -23,6 +24,7 @@ async function obraDe(entidad, id) {
 
 r.get('/', requirePerm('obras.ver'), wrap(async (req, res) => {
   const { entidad, entidad_id, obra_id } = req.query;
+  await obraPropia(req, obra_id || await obraDe(entidad, Number(entidad_id)));
   if (obra_id) {
     return res.json(await many(`SELECT a.*, u.nombre AS usuario, p.marca FROM archivos a LEFT JOIN usuarios u ON u.id=a.usuario_id
       LEFT JOIN piezas p ON a.entidad='pieza' AND p.id=a.entidad_id WHERE a.obra_id=$1 ORDER BY a.creado_en DESC`, [obra_id]));
@@ -36,6 +38,7 @@ r.post('/', requirePerm('archivos.subir'), upload.array('archivos', 10), wrap(as
   if (!req.files?.length) throw bad('No se ha recibido ningún archivo.');
   const obraId = await obraDe(entidad, entidadId);
   if (!obraId) throw notFound('No se ha encontrado el elemento al que adjuntar el archivo.');
+  await obraPropia(req, obraId);
   const out = [];
   for (const f of req.files) {
     if (!PERMITIDOS.test(f.mimetype)) throw bad(`Tipo de archivo no admitido: ${f.originalname}`);
@@ -54,7 +57,7 @@ r.post('/', requirePerm('archivos.subir'), upload.array('archivos', 10), wrap(as
 r.get('/:id/contenido', requirePerm('obras.ver'), wrap(async (req, res) => {
   const a = await one('SELECT * FROM archivos WHERE id=$1', [req.params.id]);
   if (!a) throw notFound('No se ha encontrado el archivo.');
-  if (['backup', 'informe'].includes(a.entidad) && !can(req.user, a.entidad === 'backup' ? 'sistema.admin' : 'informes.ver')) throw notFound();
+  if (['backup', 'informe'].includes(a.entidad)) { if (!can(req.user, 'sistema.admin')) throw notFound(); } else await obraPropia(req, a.obra_id);
   const s = await storage.stream(a.clave).catch(() => null);
   if (!s) throw notFound('El archivo no está disponible en el almacenamiento.');
   res.set('Content-Type', a.mime);
@@ -66,6 +69,7 @@ r.get('/:id/contenido', requirePerm('obras.ver'), wrap(async (req, res) => {
 r.delete('/:id', requirePerm('archivos.subir'), wrap(async (req, res) => {
   const a = await one('SELECT * FROM archivos WHERE id=$1', [req.params.id]);
   if (!a) throw notFound();
+  if (a.obra_id) await obraPropia(req, a.obra_id); else if (!can(req.user, 'sistema.admin')) throw notFound();
   if (a.usuario_id !== req.user.id && !can(req.user, 'obras.editar')) throw bad('Solo puedes borrar archivos que hayas subido tú.');
   await q('DELETE FROM archivos WHERE id=$1', [a.id]);
   await storage.remove(a.clave);

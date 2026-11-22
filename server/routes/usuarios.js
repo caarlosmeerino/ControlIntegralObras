@@ -9,11 +9,6 @@ import { audit } from '../audit.js';
 const r = Router();
 const roles = Object.keys(ROLES);
 
-// Lista mínima (para selectores de responsable) — cualquier usuario autenticado
-r.get('/lista', wrap(async (req, res) => {
-  res.json(await many("SELECT id, nombre, rol FROM usuarios WHERE activo ORDER BY nombre"));
-}));
-
 r.use(requirePerm('usuarios.admin'));
 
 r.get('/', wrap(async (req, res) => {
