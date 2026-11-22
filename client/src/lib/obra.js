@@ -60,3 +60,10 @@ export const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'ju
 export const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 /** Una fase toca un intervalo de fechas */
 export const solapa = (e, desde, hasta) => (e.fecha_inicio || e.fecha_fin) && (e.fecha_inicio || e.fecha_fin) <= hasta && (e.fecha_fin || e.fecha_inicio) >= desde;
+
+/** Color pastel por proyecto para el calendario: fondo suave y texto del mismo tono, oscuro */
+export function pastelObra(nombre) {
+  let h = 0; for (const ch of String(nombre || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const tono = [210, 265, 330, 25, 45, 150, 185, 290, 95, 5][h % 10];
+  return { '--pb': `hsl(${tono} 75% 89%)`, '--pf': `hsl(${tono} 45% 28%)`, '--pd': `hsl(${tono} 60% 62%)` };
+}

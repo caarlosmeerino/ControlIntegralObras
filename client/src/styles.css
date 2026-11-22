@@ -910,3 +910,13 @@ button.lista-fila:last-child { border-bottom: 0; }
 .marcador { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--sep); display: grid; place-items: center; flex: none; color: #fff; }
 .elegible.on .marcador { background: var(--accent); border-color: var(--accent); }
 .chips-sugeridas { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ---------- Calendario en colores pastel ---------- */
+.cal-barra, .cal-barra.retrasado, .cal-barra.terminado { background: var(--eb, var(--pb)); color: var(--ef, var(--pf)); font-weight: 600; opacity: 1; }
+.cal-barra.ini { box-shadow: inset 3px 0 0 var(--ed, var(--pd)); }
+.sg-barra, .sg-barra.retrasado, .sg-barra.terminado { background: var(--eb, var(--pb)); color: var(--ef, var(--pf)); box-shadow: inset 3px 0 0 var(--ed, var(--pd)); }
+.cal-barra.retrasado, .sg-barra.retrasado { --eb: #ffe1df; --ef: #a3261d; --ed: #ff8a80; }
+.cal-barra.terminado, .sg-barra.terminado { --eb: #dcf5e3; --ef: #23683a; --ed: #7fd39a; }
+.cal-barra.terminado { text-decoration: line-through; text-decoration-color: rgb(35 104 58 / .4); }
+:root[data-theme="dark"] .cal-barra, :root[data-theme="dark"] .sg-barra { filter: saturate(.8) brightness(.8); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cal-barra, :root:not([data-theme="light"]) .sg-barra { filter: saturate(.8) brightness(.8); } }

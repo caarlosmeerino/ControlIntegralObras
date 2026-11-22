@@ -4,7 +4,7 @@ import { useData } from '../lib/app.jsx';
 import { qs } from '../lib/api.js';
 import { Loading, ErrorBox, Status, Empty, Cabecera } from '../components/ui.jsx';
 import { AvatarCliente } from '../components/ClientePicker.jsx';
-import { lunesDeSemana, semanaISO, masDias, semanasDelAnio, MESES, DIAS, estadoEtapa, colorCliente } from '../lib/obra.js';
+import { lunesDeSemana, semanaISO, masDias, semanasDelAnio, MESES, DIAS, estadoEtapa, colorCliente, pastelObra } from '../lib/obra.js';
 import { barrasSemana } from '../components/Calendario.jsx';
 import * as f from '../lib/format.js';
 
@@ -65,7 +65,7 @@ export default function Planning() {
                 </span>
                 <span className="sg-pista">
                   {Array.from({ length: 7 }, (_, i) => <i key={i} className={masDias(lunes, i) === hoy ? 'hoy' : ''} />)}
-                  <span className={`sg-barra ${e.estado}`} style={{ gridColumn: `${a + 1} / ${b + 2}`, '--c': colorCliente(e.obra_nombre) }}>
+                  <span className={`sg-barra ${e.estado}`} style={{ gridColumn: `${a + 1} / ${b + 2}`, ...pastelObra(e.obra_nombre) }}>
                     {e.tareas_total ? `${e.tareas_hechas}/${e.tareas_total}` : ''}
                   </span>
                 </span>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useData } from '../lib/app.jsx';
 import { qs } from '../lib/api.js';
-import { semanaISO, lunesDeSemana, masDias, MESES, DIAS, estadoEtapa, colorCliente } from '../lib/obra.js';
+import { semanaISO, lunesDeSemana, masDias, MESES, DIAS, estadoEtapa, colorCliente, pastelObra } from '../lib/obra.js';
 import { hoyISO } from '../lib/format.js';
 
 /** Barras de fases dentro de una semana (como los eventos de varios días del Calendario) */
@@ -72,7 +72,7 @@ export default function Calendario() {
             <span className="cal-barras" style={{ gridTemplateRows: `repeat(${Math.min(MAX, Math.max(1, ...visibles.map((b) => b.fila + 1), 0))}, 18px)` }}>
               {visibles.map(({ e, a: ia, b: ib, fila, empieza, acaba }) => (
                 <span key={e.id} className={`cal-barra ${e.estado} ${empieza ? 'ini' : ''} ${acaba ? 'fin' : ''}`}
-                  style={{ gridColumn: `${ia + 1} / ${ib + 2}`, gridRow: fila + 1, '--c': colorCliente(e.obra_nombre) }} title={`${e.obra_nombre} · ${e.nombre}`}>
+                  style={{ gridColumn: `${ia + 1} / ${ib + 2}`, gridRow: fila + 1, ...pastelObra(e.obra_nombre) }} title={`${e.obra_nombre} · ${e.nombre}`}>
                   {e.obra_nombre} · {e.nombre}
                 </span>
               ))}
