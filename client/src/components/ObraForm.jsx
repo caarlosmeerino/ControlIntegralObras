@@ -16,7 +16,7 @@ export default function ObraForm({ obra, cliente = '', onClose, onSaved }) {
   const [d, setD] = useState(() => obra
     ? { ...obra }
     : { codigo: '', nombre: '', cliente, ciudad: '', provincia: '', direccion: '', codigo_postal: '', lat: null, lng: null, estado: 'en_curso', observaciones: '' });
-  const [fases, setFases] = useState(() => (obra?.etapas?.length ? obra.etapas.map((e) => ({ nombre: e.nombre, fecha_inicio: e.fecha_inicio || '', fecha_fin: e.fecha_fin || '' })) : [{ ...nuevaFase(1), fecha_inicio: f.hoyISO() }]));
+  const [fases, setFases] = useState(() => (obra?.etapas?.length ? obra.etapas.map((e) => ({ id: e.id, nombre: e.nombre, fecha_inicio: e.fecha_inicio || '', fecha_fin: e.fecha_fin || '', tareas: e.tareas_total || 0 })) : [{ ...nuevaFase(1), fecha_inicio: f.hoyISO() }]));
   const [busy, setBusy] = useState(false);
   const s = (k) => (e) => setD({ ...d, [k]: e.target.value });
   const fase = (i, k) => (e) => setFases(fases.map((x, j) => (j === i ? { ...x, [k]: e.target.value } : x)));
@@ -30,7 +30,7 @@ export default function ObraForm({ obra, cliente = '', onClose, onSaved }) {
     try {
       const { solo_texto: _manual, ...datos } = d;
       const body = { ...datos,
-        etapas: fases.map((x, i) => ({ ...x, nombre: x.nombre.trim() || `Fase ${i + 1}` })) };
+        etapas: fases.map(({ tareas: _t, ...x }, i) => ({ ...x, nombre: x.nombre.trim() || `Fase ${i + 1}` })) };
       const r = obra ? await put(`/obras/${obra.id}`, body) : await post('/obras', body);
       toast(obra ? 'Proyecto actualizado.' : `Proyecto ${r.codigo} creado.`);
       onSaved?.(r); onClose();
@@ -59,7 +59,7 @@ export default function ObraForm({ obra, cliente = '', onClose, onSaved }) {
               <div className="row" style={{ gap: 8 }}>
                 <span className="fase-num">{i + 1}</span>
                 <input className="input fase-nombre" value={x.nombre} onChange={fase(i, 'nombre')} placeholder={`Fase ${i + 1}`} aria-label={`Nombre de la fase ${i + 1}`} />
-                {fases.length > 1 && <button type="button" className="btn ghost icon danger" onClick={() => setFases(fases.filter((_, j) => j !== i))} aria-label={`Quitar ${x.nombre}`}><Trash2 size={18} /></button>}
+                {fases.length > 1 && <button type="button" className="btn ghost icon danger" onClick={() => { if (x.id && !confirm(`¿Quitar «${x.nombre}»?${x.tareas ? ` Se borrará su checklist (${x.tareas} tareas).` : ''}`)) return; setFases(fases.filter((_, j) => j !== i)); }} aria-label={`Quitar ${x.nombre}`}><Trash2 size={18} /></button>}
               </div>
               <div className="fase-fechas">
                 <label><span>Inicio</span><input type="date" className="input" value={x.fecha_inicio} onChange={fase(i, 'fecha_inicio')} /></label>

@@ -66,7 +66,8 @@ export function estadoPieza(pieza, fases, avMap, today = hoy()) {
 
 export async function piezasConEstado(db, where = 'TRUE', params = []) {
   const { rows: piezas } = await db.query(
-    `SELECT p.*, o.codigo AS obra_codigo, o.nombre AS obra_nombre FROM piezas p JOIN obras o ON o.id=p.obra_id
+    `SELECT p.*, o.codigo AS obra_codigo, o.nombre AS obra_nombre, cp.familia, cp.designacion AS catalogo_nombre, cp.unidad AS catalogo_unidad, cp.peso AS catalogo_peso
+     FROM piezas p JOIN obras o ON o.id=p.obra_id LEFT JOIN catalogo_piezas cp ON cp.id=p.catalogo_id
      WHERE ${where} ORDER BY o.codigo, p.marca`, params);
   if (!piezas.length) return [];
   const obraIds = [...new Set(piezas.map((p) => p.obra_id))];
@@ -253,7 +254,9 @@ export async function resumenObras(db, obraIds = null) {
     db.query(`SELECT obra_id, COUNT(*)::int AS n_marcas, SUM(cantidad)::int AS n_unidades, SUM(peso_unitario_kg*cantidad) AS kg_total,
               SUM(m2_unitario*cantidad) AS m2_total, SUM(ml_unitario*cantidad) AS ml_total
               FROM piezas WHERE obra_id = ANY($1) GROUP BY obra_id`, [ids]),
-    db.query('SELECT * FROM etapas WHERE obra_id = ANY($1) ORDER BY obra_id, orden', [ids]),
+    db.query(`SELECT e.*, (SELECT COUNT(*)::int FROM etapa_tareas t WHERE t.etapa_id=e.id) AS tareas_total,
+      (SELECT COUNT(*)::int FROM etapa_tareas t WHERE t.etapa_id=e.id AND t.hecha) AS tareas_hechas
+      FROM etapas e WHERE e.obra_id = ANY($1) ORDER BY e.obra_id, e.orden`, [ids]),
   ]);
   const kgMap = new Map(kg.map((k) => [k.obra_fase_id, Number(k.kg)]));
   const st = new Map(stats.map((s) => [s.obra_id, s]));

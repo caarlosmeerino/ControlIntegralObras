@@ -9,18 +9,19 @@ Aplicación web para gestionar la **fabricación y el montaje de estructuras met
 | **Archivos** | Volumen de Railway o bucket compatible S3, separados de la aplicación |
 | **Seguridad** | Contraseñas con bcrypt, sesión en cookie `httpOnly`, permisos comprobados en el servidor en cada ruta |
 
-## Uso (versión simplificada)
+## Uso
 
-1. **Inicio**: botón «Nuevo proyecto», buscador (cliente, ciudad, nombre o código) y lista de **clientes**.
-2. **Cliente**: sus proyectos con el avance de fabricación y de montaje.
-3. **Proyecto**: pestañas *Resumen · Fabricación · Montaje · Planos · Documentos*.
-   - *Fabricación*: despiece con el avance de taller (fases de oficina y taller) y botón «Avanzar».
-   - *Montaje*: el mismo despiece visto desde obra (en obra, montadas) y botón «Avanzar».
-
-La **ciudad** se elige de los 8.132 municipios oficiales del INE (`client/public/municipios.json`, generado del paquete `spanish-cities-info`, licencia ISC); el servidor rechaza municipios que no existan y guarda también la provincia.
-
-El escaneo QR y los apartados de personal, informes y partes se han retirado de la interfaz para simplificarla
-(la API y la base de datos los conservan por si se recuperan más adelante).
+1. **Planning (inicio)**: calendario mensual con el número de semana del año (ISO 8601, 52 o 53 semanas).
+   Cada semana muestra las fases de los proyectos como barras; al tocarla se abre el planning de esa semana
+   (qué empieza, qué termina y qué va con retraso). Debajo: clientes y obras más próximas.
+2. **Cliente** → sus proyectos con el avance de sus fases.
+3. **Proyecto**: *Resumen* (fases y datos) · *Piezas* · *Planos* · *Documentos* (archivos subidos).
+4. **Fases**: las crea el usuario (nombre, inicio y fin). Cada fase tiene su **checklist** y solo se da por
+   terminada cuando se **confirma**. Si pasa la fecha de fin sin confirmar, aparece como **retraso**.
+5. **Registro de piezas** (`/piezas`): 649 perfiles y piezas normalizados (IPE, IPN, HEA, HEB, HEM, UPN, UPE, T,
+   angulares, tubos EN 10219, barras, pletinas, chapas, tramex, corrugado, mallazo, correas, placas y tornillería)
+   con su peso, más las piezas propias. Desde un proyecto se eligen del registro o se crean nuevas, y el peso
+   se calcula con la cantidad y la longitud o superficie.
 
 ## Documentación por etapas
 

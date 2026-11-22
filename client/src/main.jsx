@@ -9,7 +9,8 @@ import Inicio from './pages/Inicio.jsx';
 import './styles.css';
 
 const P = {
-  Cliente: lazy(() => import('./pages/Cliente.jsx')), Obra: lazy(() => import('./pages/ObraDetalle.jsx')), Pieza: lazy(() => import('./pages/Pieza.jsx')),
+  Cliente: lazy(() => import('./pages/Cliente.jsx')), Obra: lazy(() => import('./pages/ObraDetalle.jsx')), Fase: lazy(() => import('./pages/Fase.jsx')),
+  Planning: lazy(() => import('./pages/Planning.jsx')), Registro: lazy(() => import('./components/Registro.jsx')),
   Usuarios: lazy(() => import('./pages/Usuarios.jsx')), Sistema: lazy(() => import('./pages/Sistema.jsx')), Perfil: lazy(() => import('./pages/Perfil.jsx')),
 };
 
@@ -30,7 +31,9 @@ function Root() {
         <Route index element={<Inicio />} />
         {r('clientes/:nombre', P.Cliente, ['obras.ver'])}
         {r('obras/:id', P.Obra, ['obras.ver'])}
-        {r('piezas/:id', P.Pieza, ['piezas.ver'])}
+        {r('obras/:id/fases/:faseId', P.Fase, ['obras.ver'])}
+        {r('planning/:anio/:semana', P.Planning, ['obras.ver'])}
+        {r('piezas', P.Registro, ['piezas.ver'])}
         {r('usuarios', P.Usuarios, ['usuarios.admin'])}
         {r('sistema', P.Sistema, ['sistema.admin'])}
         {r('perfil', P.Perfil)}

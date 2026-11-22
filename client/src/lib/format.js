@@ -60,3 +60,4 @@ export const mapsUrl = (o) => {
   const q = [o.direccion, o.ciudad, o.provincia && o.provincia !== o.ciudad ? o.provincia : '', 'España'].filter(Boolean).join(', ');
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 };
+export const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];

@@ -35,7 +35,7 @@ function leerEtapas(lista) {
   if (lista === undefined) return undefined;
   if (!Array.isArray(lista)) throw bad('Las fases no tienen un formato válido.');
   return lista.map((e, i) => {
-    const et = { nombre: str(e.nombre, `nombre de la fase ${i + 1}`, { max: 120 }) || `Fase ${i + 1}`,
+    const et = { id: e.id ? Number(e.id) : null, nombre: str(e.nombre, `nombre de la fase ${i + 1}`, { max: 120 }) || `Fase ${i + 1}`,
       fecha_inicio: date(e.fecha_inicio, `inicio de la fase ${i + 1}`), fecha_fin: date(e.fecha_fin, `fin de la fase ${i + 1}`) };
     if (et.fecha_inicio && et.fecha_fin && et.fecha_fin < et.fecha_inicio) throw bad(`En «${et.nombre}» la fecha de fin es anterior a la de inicio.`);
     return et;
@@ -44,9 +44,14 @@ function leerEtapas(lista) {
 
 async function guardarEtapas(db, obraId, etapas) {
   if (etapas === undefined) return;
-  await db.query('DELETE FROM etapas WHERE obra_id=$1', [obraId]);
+  // Se actualizan las existentes (conservan checklist y confirmación), se crean las nuevas y se quitan las eliminadas
+  const ids = etapas.map((e) => e.id).filter(Boolean);
+  await db.query('DELETE FROM etapas WHERE obra_id=$1 AND NOT (id = ANY($2::int[]))', [obraId, ids]);
+  await db.query('UPDATE etapas SET orden = orden + 1000 WHERE obra_id=$1', [obraId]);
   for (const [i, e] of etapas.entries()) {
-    await db.query('INSERT INTO etapas (obra_id, orden, nombre, fecha_inicio, fecha_fin) VALUES ($1,$2,$3,$4,$5)', [obraId, i + 1, e.nombre, e.fecha_inicio, e.fecha_fin]);
+    const { rowCount } = e.id ? await db.query('UPDATE etapas SET orden=$1, nombre=$2, fecha_inicio=$3, fecha_fin=$4 WHERE id=$5 AND obra_id=$6',
+      [i + 1, e.nombre, e.fecha_inicio, e.fecha_fin, e.id, obraId]) : { rowCount: 0 };
+    if (!rowCount) await db.query('INSERT INTO etapas (obra_id, orden, nombre, fecha_inicio, fecha_fin) VALUES ($1,$2,$3,$4,$5)', [obraId, i + 1, e.nombre, e.fecha_inicio, e.fecha_fin]);
   }
   // Las fechas generales del proyecto salen de sus fases
   await db.query(`UPDATE obras SET fecha_inicio = (SELECT MIN(fecha_inicio) FROM etapas WHERE obra_id=$1),

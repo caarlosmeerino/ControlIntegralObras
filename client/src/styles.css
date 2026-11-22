@@ -589,3 +589,114 @@ input[type="date"].input { -webkit-appearance: none; appearance: none; display: 
 .icono-nube.grande { width: 56px; height: 56px; }
 .card-head .btn-row { flex-wrap: wrap; }
 @media (max-width: 980px) { .card-head .btn-row { width: 100%; } .card-head .btn-row .btn { flex: 1; } }
+
+/* ---------- Navegación superior ---------- */
+.cab-nav { display: flex; gap: 2px; margin-left: 4px; }
+.cab-link { padding: 7px 14px; border-radius: 999px; color: var(--text-2); font-size: .94rem; font-weight: 500; }
+.cab-link:hover { background: var(--fill); text-decoration: none; }
+.cab-link.on, .cab-link.active { background: var(--fill); color: var(--text); font-weight: 600; }
+@media (max-width: 520px) { .marca-txt { display: none; } .cab-link { padding: 7px 12px; } }
+
+/* ---------- Calendario mensual con semanas ---------- */
+.calendario { padding: 18px 14px 14px; }
+.cal-cabecera { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 12px; }
+.cal-cabecera h2 { font-size: 1.45rem; font-weight: 700; }
+.cal-mes { text-transform: capitalize; }
+.cal-dias, .cal-semana { display: grid; grid-template-columns: 44px repeat(7, minmax(0, 1fr)); }
+.cal-dias { font-size: .72rem; font-weight: 600; color: var(--text-3); text-align: center; padding-bottom: 6px; }
+.cal-sem-tit { text-align: center; }
+.cal-semana { position: relative; width: 100%; border: 0; background: none; color: var(--text); padding: 4px 0 8px; min-height: 74px; align-content: start; cursor: pointer;
+  border-top: .5px solid var(--sep); border-radius: 12px; text-align: center; transition: background .12s; }
+.cal-semana:hover { background: var(--surface-2); }
+.cal-semana:active { background: var(--surface-3); }
+.cal-semana.actual { background: var(--accent-soft); }
+.cal-num { grid-row: 1; grid-column: 1; align-self: start; justify-self: center; margin-top: 3px; font-size: .74rem; font-weight: 700; color: var(--accent);
+  background: var(--accent-soft); border-radius: 8px; min-width: 30px; padding: 3px 0; }
+.cal-semana.actual .cal-num { background: var(--accent); color: #fff; }
+.cal-dia { grid-row: 1; font-size: .95rem; font-variant-numeric: tabular-nums; padding-top: 2px; }
+.cal-dia i { font-style: normal; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; }
+.cal-dia.fuera { color: var(--text-3); opacity: .55; }
+.cal-dia.finde { color: var(--text-3); }
+.cal-dia.hoy i { background: var(--bad); color: #fff; font-weight: 700; }
+.cal-barras { grid-row: 2; grid-column: 2 / -1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px 0; margin-top: 4px; }
+.cal-barra { height: 18px; line-height: 18px; font-size: .68rem; font-weight: 600; color: #fff; padding: 0 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  background: var(--c); margin: 0 1px; text-align: left; }
+.cal-barra.ini { border-top-left-radius: 6px; border-bottom-left-radius: 6px; margin-left: 3px; }
+.cal-barra.fin { border-top-right-radius: 6px; border-bottom-right-radius: 6px; margin-right: 3px; }
+.cal-barra.retrasado { background: var(--bad); }
+.cal-barra.terminado { background: var(--ok); opacity: .75; }
+.cal-mas { grid-column: 1; grid-row: 2; align-self: start; justify-self: center; margin-top: 6px; font-size: .7rem; color: var(--text-3); font-weight: 700; }
+.cal-leyenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .78rem; color: var(--text-3); padding: 10px 6px 0; }
+.cal-leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 520px) { .cal-dias, .cal-semana { grid-template-columns: 34px repeat(7, minmax(0, 1fr)); } .cal-num { min-width: 26px; } .cal-dia i { width: 26px; height: 26px; } .cal-barra { font-size: .6rem; padding: 0 3px; } }
+
+/* ---------- Planning semanal ---------- */
+.resumen-semana { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.resumen-semana > div { background: var(--surface); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow); color: var(--text-2); }
+.resumen-semana b { font-size: 1.4rem; color: var(--text); }
+.resumen-semana span { font-size: .85rem; }
+.resumen-semana .mal { color: var(--bad-txt); } .resumen-semana .mal b { color: var(--bad-txt); }
+.semana-gantt { padding: 14px; }
+.sg-cab, .sg-fila { display: grid; grid-template-columns: minmax(130px, 30%) 1fr; gap: 10px; align-items: center; }
+.sg-cab { padding-bottom: 8px; }
+.sg-cab { grid-template-columns: minmax(130px, 30%) repeat(7, minmax(0, 1fr)); column-gap: 0; }
+.sg-cab > span { display: flex; flex-direction: column; align-items: center; font-size: .72rem; color: var(--text-3); font-weight: 600; }
+.sg-cab > span b { font-size: 1rem; color: var(--text); font-weight: 600; }
+.sg-cab > span.hoy b { color: #fff; background: var(--bad); border-radius: 50%; width: 26px; height: 26px; display: grid; place-items: center; }
+.sg-fila { padding: 8px 0; border-top: .5px solid var(--sep); color: var(--text); }
+.sg-fila:hover { text-decoration: none; background: var(--surface-2); border-radius: 10px; }
+.sg-nombre { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sg-nombre b, .sg-nombre small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sg-nombre b { font-size: .9rem; font-weight: 600; }
+.sg-nombre small { font-size: .78rem; color: var(--text-3); }
+.sg-pista { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); height: 30px; align-items: center; }
+.sg-pista > i { grid-row: 1; height: 100%; border-left: .5px dashed var(--sep); }
+.sg-pista > i.hoy { background: color-mix(in srgb, var(--bad) 8%, transparent); }
+.sg-barra { grid-row: 1; height: 22px; border-radius: 7px; background: var(--c); color: #fff; font-size: .72rem; font-weight: 700; display: flex; align-items: center; justify-content: flex-end; padding: 0 8px; margin: 0 2px; }
+.sg-barra.retrasado { background: var(--bad); } .sg-barra.terminado { background: var(--ok); }
+
+/* ---------- Fases, checklist y piezas ---------- */
+.fase-fila { align-items: center; }
+.fases-mini { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.fases-puntos { display: flex; gap: 4px; }
+.fases-puntos i { width: 22px; height: 6px; border-radius: 99px; background: var(--fill); }
+.fases-puntos i.terminado { background: var(--ok); } .fases-puntos i.en_curso { background: var(--accent); } .fases-puntos i.retrasado { background: var(--bad); }
+.fecha-chip { width: 48px; flex: none; text-align: center; border-radius: 12px; background: var(--surface-2); padding: 6px 0; }
+.fecha-chip b { display: block; font-size: 1.25rem; line-height: 1; }
+.fecha-chip span { font-size: .7rem; color: var(--text-3); text-transform: uppercase; }
+.fecha-chip.retrasado { background: var(--bad-soft); color: var(--bad-txt); }
+.checklist { display: flex; flex-direction: column; }
+.check-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: .5px solid var(--sep); }
+.check-btn { border: 0; background: none; color: var(--text-3); cursor: pointer; padding: 4px; display: grid; place-items: center; min-width: 44px; min-height: 44px; }
+.check-item.hecha .check-btn { color: var(--ok); }
+.check-item.hecha .check-texto { color: var(--text-3); text-decoration: line-through; }
+.check-texto { font-size: 1.02rem; }
+.check-nueva { display: flex; align-items: center; gap: 10px; padding: 12px 10px 4px; }
+.check-nueva input { border: 0; background: transparent; font-size: 1.02rem; min-height: 44px; outline: none; }
+.fases-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.fases-nav .chip { white-space: nowrap; }
+.fases-nav .chip:hover { text-decoration: none; }
+.icono-pieza { display: inline-grid; place-items: center; border-radius: 22%; flex: none; }
+.familias { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 4px; scrollbar-width: none; }
+.familias .chip { white-space: nowrap; flex: none; }
+.chip-icono { padding-left: 6px; }
+.chip.on .icono-pieza { background: rgb(255 255 255 / .25) !important; color: #fff !important; }
+.pieza-fila { width: 100%; border: 0; background: transparent; cursor: pointer; font: inherit; }
+.peso-total { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.peso-total > div { background: var(--surface-2); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; }
+.peso-total span { font-size: .8rem; color: var(--text-3); }
+.peso-total b { font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.crear-pieza { background: var(--surface-2); border-radius: 14px; margin-bottom: 14px; }
+
+/* Fichas de tipos de pieza en el registro */
+.fichas-familia { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.ficha-familia { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px; border: 0; border-radius: 16px; background: var(--surface);
+  box-shadow: var(--shadow); cursor: pointer; text-align: left; color: var(--text); transition: transform .15s; }
+.ficha-familia:hover { transform: translateY(-2px); }
+.ficha-familia:active { transform: scale(.97); }
+.ficha-familia b { font-size: .98rem; font-weight: 600; }
+.ficha-familia span { font-size: .8rem; color: var(--text-3); }
+.ficha-familia.propia { flex-direction: row; align-items: center; width: 100%; margin-bottom: 4px; }
+.ficha-familia.propia span { margin-left: auto; }
+.sheet .fichas-familia .ficha-familia { background: var(--surface-2); box-shadow: none; }
+@media (max-width: 520px) { .fichas-familia { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -27,8 +27,12 @@ export default function Layout() {
             <span className="app-icon"><Ic.PerfilH size={18} /></span>
             <span className="marca-txt">Control Integral</span>
           </NavLink>
+          <nav className="cab-nav" aria-label="Secciones">
+            <NavLink to="/" end className={({ isActive }) => `cab-link ${isActive || loc.pathname.startsWith('/planning') || loc.pathname.startsWith('/clientes') || loc.pathname.startsWith('/obras') ? 'on' : ''}`}>Planning</NavLink>
+            <NavLink to="/piezas" className="cab-link">Piezas</NavLink>
+          </nav>
           <div className="grow" />
-          <button className="btn icon cab-btn" onClick={() => setTema(oscuro ? 'light' : 'dark')} aria-label={oscuro ? 'Modo claro' : 'Modo oscuro'} title={oscuro ? 'Modo claro' : 'Modo oscuro'}>{oscuro ? <Ic.Sol size={22} /> : <Ic.Luna size={22} />}</button>
+          <button className="btn icon cab-btn hide-m" onClick={() => setTema(oscuro ? 'light' : 'dark')} aria-label={oscuro ? 'Modo claro' : 'Modo oscuro'} title={oscuro ? 'Modo claro' : 'Modo oscuro'}>{oscuro ? <Ic.Sol size={22} /> : <Ic.Luna size={22} />}</button>
           <button className="btn cab-btn avatar" onClick={() => setMenu(true)} aria-haspopup="dialog" aria-label="Mi cuenta">{user.nombre.split(' ').map((x) => x[0]).slice(0, 2).join('')}</button>
         </div>
       </header>

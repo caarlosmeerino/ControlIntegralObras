@@ -22,6 +22,7 @@ function leer(b) {
     observaciones: str(b.observaciones, 'observaciones', { max: 5000 }),
     m2_unitario: num(b.m2_unitario, 'superficie por unidad (m²)', { min: 0, max: 1e6, def: 0 }),
     ml_unitario: num(b.ml_unitario, 'longitud por unidad (ml)', { min: 0, max: 1e6, def: 0 }),
+    catalogo_id: b.catalogo_id ? num(b.catalogo_id, 'pieza del registro', { int: true }) : null,
   };
 }
 
@@ -43,8 +44,8 @@ r.post('/', requirePerm('piezas.editar'), wrap(async (req, res) => {
   const obraId = num(req.body.obra_id, 'obra', { int: true });
   const d = leer(req.body);
   const n = await one(
-    `INSERT INTO piezas (obra_id, marca, elemento, perfil, plano, peso_unitario_kg, cantidad, observaciones, m2_unitario, ml_unitario) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, marca`,
-    [obraId, d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario]);
+    `INSERT INTO piezas (obra_id, marca, elemento, perfil, plano, peso_unitario_kg, cantidad, observaciones, m2_unitario, ml_unitario, catalogo_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, marca`,
+    [obraId, d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario, d.catalogo_id]);
   await audit({ query: q }, { entidad: 'pieza', entidadId: n.id, obraId, accion: 'crear', detalle: `Pieza ${n.marca}: ${d.cantidad} × ${d.peso_unitario_kg} kg`, usuarioId: req.user.id });
   res.status(201).json(await piezaConEstado({ query: q }, n.id));
 }));
@@ -120,8 +121,8 @@ r.put('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
     incidencia: req.body.incidencia !== undefined ? !!req.body.incidencia : cur.incidencia,
   };
   await q(`UPDATE piezas SET marca=$1, elemento=$2, perfil=$3, plano=$4, peso_unitario_kg=$5, cantidad=$6, observaciones=$7, m2_unitario=$8, ml_unitario=$9,
-           fecha_fabricacion=$10, fecha_expedicion=$11, fecha_montaje=$12, incidencia=$13, actualizado_en=now() WHERE id=$14`,
-  [d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario, ...Object.values(extra), id]);
+           catalogo_id=$10, fecha_fabricacion=$11, fecha_expedicion=$12, fecha_montaje=$13, incidencia=$14, actualizado_en=now() WHERE id=$15`,
+  [d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario, d.catalogo_id, ...Object.values(extra), id]);
   const todo = { ...d, ...extra };
   const cambios = Object.keys(todo).filter((k) => String(todo[k] ?? '') !== String(cur[k] ?? ''));
   if (cambios.length) await audit({ query: q }, { entidad: 'pieza', entidadId: id, obraId: cur.obra_id, accion: 'editar',

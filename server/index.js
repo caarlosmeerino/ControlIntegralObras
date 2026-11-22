@@ -25,7 +25,8 @@ import costesR from './routes/costes.js';
 import informesR from './routes/informes.js';
 import sistemaR from './routes/sistema.js';
 import direccionesR from './routes/direcciones.js';
-import enlacesR from './routes/enlaces.js';
+import catalogoR, { sembrarCatalogo } from './routes/catalogo.js';
+import etapasR from './routes/etapas.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -60,7 +61,8 @@ app.use('/api/costes', costesR);
 app.use('/api/informes', informesR);
 app.use('/api/sistema', sistemaR);
 app.use('/api/direcciones', direccionesR);
-app.use('/api/enlaces', enlacesR);
+app.use('/api/catalogo', catalogoR);
+app.use('/api/etapas', etapasR);
 app.use('/api', panelR);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 app.use(errorHandler);
@@ -80,6 +82,7 @@ if (fs.existsSync(dist)) {
 const start = async () => {
   await migrate();
   await rellenarProvincias(pool).catch((e) => console.warn('[municipios]', e.message));
+  await sembrarCatalogo(pool).catch((e) => console.warn('[catálogo]', e.message));
   if (process.env.SEED_DEMO === 'true') {
     // Datos de ejemplo bajo demanda (solo añade; si ya existen no hace nada)
     const { sembrar } = await import('../scripts/seed.js');
