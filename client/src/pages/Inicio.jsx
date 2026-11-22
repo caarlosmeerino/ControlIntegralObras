@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, CalendarDays } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Empty, Status, BotonMas } from '../components/ui.jsx';
+import { Loading, ErrorBox, Empty, BotonMas, Cabecera, IconoIniciales } from '../components/ui.jsx';
 import { Lupa } from '../components/iconos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import Calendario from '../components/Calendario.jsx';
@@ -50,10 +50,10 @@ export default function Inicio() {
   if (error) return <ErrorBox error={error} retry={reload} />;
   return (
     <>
-      <div className="page-head">
-        <div><h1>Planning</h1><p>{f.plural(activas.length, 'proyecto en curso', 'proyectos en curso')}{activas.filter(obraRetrasada).length ? <span className="txt-mal"> · {activas.filter(obraRetrasada).length} con retraso</span> : ''}</p></div>
-        {can('obras.editar') && <BotonMas texto="Nuevo proyecto" onClick={() => setNueva(true)} />}
-      </div>
+      <Cabecera icono={<IconoIniciales icon={CalendarDays} color="linear-gradient(180deg,#ff6b6b,#e5383b)" />} titulo="Planning"
+        sub={f.plural(activas.length, 'proyecto en curso', 'proyectos en curso')}
+        estado={activas.filter(obraRetrasada).length ? <span className="badge bad">{activas.filter(obraRetrasada).length} con retraso</span> : <span className="badge ok">Todo al día</span>}
+        acciones={can('obras.editar') && <BotonMas texto="Nuevo proyecto" onClick={() => setNueva(true)} />} />
 
       <Calendario />
 

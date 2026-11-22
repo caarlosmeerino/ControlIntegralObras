@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { KeyRound, Moon, Sun, MonitorSmartphone, Download } from 'lucide-react';
 import { useApp } from '../lib/app.jsx';
 import { post } from '../lib/api.js';
-import { Field, Selector } from '../components/ui.jsx';
+import { Field, Selector, Cabecera, IconoIniciales } from '../components/ui.jsx';
 import * as f from '../lib/format.js';
 
 export default function Perfil() {
@@ -15,7 +15,7 @@ export default function Perfil() {
   };
   return (
     <div style={{ maxWidth: 640 }}>
-      <div className="page-head"><div><h1>Mi cuenta</h1><p>{user.nombre} · {user.username}</p></div></div>
+      <Cabecera icono={<IconoIniciales texto={user.nombre} color="linear-gradient(180deg,#a1a1a6,#7c7c80)" />} titulo={user.nombre} sub={`${f.ROLES[user.rol]} · ${user.username}`} />
       <div className="card mb"><h2 className="mb">Apariencia</h2>
         <Selector titulo="Apariencia" value={tema} onChange={setTema} options={[{ value: 'light', label: 'Claro', icon: Sun }, { value: 'dark', label: 'Oscuro', icon: Moon }, { value: 'auto', label: 'Igual que el sistema', icon: MonitorSmartphone }]} />
         <div className="hint mt">El modo oscuro reduce reflejos y deslumbramiento en el taller.</div>

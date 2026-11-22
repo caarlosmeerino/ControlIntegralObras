@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Empty, Status, Selector, BotonMas } from '../components/ui.jsx';
+import { Loading, ErrorBox, Empty, Status, Selector, BotonMas, Cabecera } from '../components/ui.jsx';
 import ObraForm from '../components/ObraForm.jsx';
 import { ACTIVAS, estadoEtapa, faseActual, obraRetrasada } from '../lib/obra.js';
 import { AvatarCliente } from '../components/ClientePicker.jsx';
@@ -48,13 +48,10 @@ export default function Cliente() {
   return (
     <>
       <Link to="/" className="volver"><ChevronLeft size={20} />Proyectos</Link>
-      <div className="page-head">
-        <div className="row" style={{ gap: 16 }}>
-          <AvatarCliente nombre={cliente} size={64} />
-          <div><h1>{cliente}</h1><p>{f.plural(todas.length, 'proyecto')}{ciudades.length ? ` · ${ciudades.join(', ')}` : ''}</p></div>
-        </div>
-        {can('obras.editar') && <BotonMas texto="Nuevo proyecto" onClick={() => setNueva(true)} />}
-      </div>
+      <Cabecera icono={<AvatarCliente nombre={cliente} size={56} />} titulo={cliente}
+        sub={`${f.plural(todas.length, 'proyecto')}${ciudades.length ? ` · ${ciudades.join(', ')}` : ''}`}
+        estado={todas.some(obraRetrasada) ? <span className="badge bad">Con retraso</span> : null}
+        acciones={can('obras.editar') && <BotonMas texto="Nuevo proyecto" onClick={() => setNueva(true)} />} />
       <div className="mb"><Selector filtro titulo="Mostrar proyectos" value={estado} onChange={setEstado} options={[['curso', 'En curso'], ['terminadas', 'Terminados'], ['todas', 'Todos']]} /></div>
       {lista.length ? <div className="lista">{lista.map((o) => <ProyectoFila key={o.id} o={o} />)}</div> : <Empty title="No hay proyectos en este filtro" />}
       {nueva && <ObraForm cliente={cliente === 'Sin cliente' ? '' : cliente} onClose={() => setNueva(false)} onSaved={(o) => nav(`/obras/${o.id}`)} />}

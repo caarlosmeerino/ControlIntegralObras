@@ -330,3 +330,23 @@ export function Selector({ value, options, onChange, titulo, placeholder = 'Eleg
 export function BotonMas({ texto, onClick, icon: I = Plus }) {
   return <button type="button" className="btn-mas" onClick={onClick} aria-label={texto} title={texto}><I size={20} strokeWidth={2.4} /><span className="txt">{texto}</span></button>;
 }
+
+/** Tarjeta de cabecera: icono, nombre, datos, estado y acciones dentro de una tarjeta */
+export function Cabecera({ icono, titulo, sub, estado, acciones }) {
+  return (
+    <div className="cab-tarjeta">
+      {icono && <div className="cab-icono">{icono}</div>}
+      <div className="cab-cuerpo">
+        <h1 className="cab-titulo">{titulo}</h1>
+        {sub && <div className="cab-sub">{sub}</div>}
+        {(estado || acciones) && <div className="cab-pie"><div className="cab-estado">{estado}</div>{acciones && <div className="cab-acciones">{acciones}</div>}</div>}
+      </div>
+    </div>
+  );
+}
+
+/** Cuadradito con iniciales en color (proyectos, secciones) */
+export function IconoIniciales({ texto, color, icon: I }) {
+  const ini = String(texto || '?').trim().split(/\s+/).filter((x) => !/^(de|del|la|el|y|·)$/i.test(x)).map((x) => x[0]).slice(0, 2).join('').toUpperCase();
+  return <span className="icono-cab" style={{ background: color }}>{I ? <I size={26} /> : ini}</span>;
+}

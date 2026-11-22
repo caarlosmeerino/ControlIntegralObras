@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Pencil, MapPin, Navigation, CalendarDays, CheckCircle2 } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
-import { Loading, ErrorBox, Tabs, Status, Bar, BotonMas } from '../components/ui.jsx';
+import { Loading, ErrorBox, Tabs, Status, Bar, BotonMas, Cabecera, IconoIniciales } from '../components/ui.jsx';
 import PiezasProyecto from '../components/PiezasProyecto.jsx';
 import { ArchivosObra } from '../components/Archivos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
-import { urlCliente, estadoEtapa, obraRetrasada } from '../lib/obra.js';
+import { urlCliente, estadoEtapa, obraRetrasada, colorCliente } from '../lib/obra.js';
 import * as f from '../lib/format.js';
 
 /** Fases creadas en el proyecto: cada una abre su checklist */
@@ -58,20 +58,13 @@ export default function ObraDetalle() {
   return (
     <>
       <Link to={urlCliente(o.cliente)} className="volver"><ChevronLeft size={20} />{o.cliente || 'Sin cliente'}</Link>
-      <div className="page-head">
-        <div>
-          <div className="row wrap" style={{ gap: 8, marginBottom: 6 }}>
-            <span className="code">{o.codigo}</span>
-            {retrasada ? <Status estado="retrasado" small /> : <Status estado={o.estado} map={f.ESTADOS_OBRA} small />}
-          </div>
-          <h1>{o.nombre}</h1>
-          <p>{[o.ciudad, o.fecha_inicio && `${f.fecha(o.fecha_inicio)} → ${f.fecha(o.fecha_entrega)}`].filter(Boolean).join(' · ')}</p>
-        </div>
-        <div className="acciones-cab">
-          {hayUbicacion && <a className="btn-mas secundario" href={f.mapsUrl(o)} target="_blank" rel="noopener noreferrer" aria-label="Abrir en Google Maps" title="Google Maps"><Navigation size={19} /><span className="txt">Google Maps</span></a>}
+      <Cabecera icono={<IconoIniciales texto={o.nombre} color={colorCliente(o.nombre)} />} titulo={o.nombre}
+        sub={<>{[o.codigo, o.ciudad].filter(Boolean).join(' · ')}{o.fecha_inicio && <><br />{f.fecha(o.fecha_inicio)} → {f.fecha(o.fecha_entrega)}</>}</>}
+        estado={retrasada ? <Status estado="retrasado" small /> : <Status estado={o.estado} map={f.ESTADOS_OBRA} small />}
+        acciones={<>
+          {hayUbicacion && <a className="btn-mas secundario" href={f.mapsUrl(o)} target="_blank" rel="noopener noreferrer" aria-label="Abrir en Google Maps" title="Google Maps"><Navigation size={18} /><span className="txt">Maps</span></a>}
           {can('obras.editar') && <BotonMas texto="Editar" icon={Pencil} onClick={() => setEdit(true)} />}
-        </div>
-      </div>
+        </>} />
 
       <Tabs ancho value={tab} onChange={setTab} tabs={[
         { id: 'resumen', label: 'Resumen' }, { id: 'piezas', label: 'Piezas' }, { id: 'planos', label: 'Planos' }, { id: 'docs', label: 'Documentos' },

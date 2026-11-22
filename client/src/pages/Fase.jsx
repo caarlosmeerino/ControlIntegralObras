@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, CheckCircle2, Circle, Plus, Trash2, RotateCcw, CalendarDays, AlertTriangle } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { post, put, del } from '../lib/api.js';
-import { Loading, ErrorBox, Status, Ring } from '../components/ui.jsx';
+import { Loading, ErrorBox, Status, Ring, Cabecera } from '../components/ui.jsx';
 import { estadoEtapa } from '../lib/obra.js';
 import * as f from '../lib/format.js';
 
@@ -51,16 +51,9 @@ export default function Fase() {
   return (
     <>
       <Link to={`/obras/${id}`} className="volver"><ChevronLeft size={20} />{e.obra_nombre}</Link>
-      <div className="page-head">
-        <div className="row cab-fase" style={{ gap: 16, alignItems: 'center' }}>
-          <Ring value={pct} size={64} tone={estado === 'retrasado' ? 'bad' : estado === 'terminado' ? 'ok' : undefined} />
-          <div>
-            <div className="row wrap" style={{ gap: 8, marginBottom: 6 }}><span className="code">Fase {e.orden}</span><Status estado={estado} small /></div>
-            <h1>{e.nombre}</h1>
-            <p><CalendarDays size={16} style={{ verticalAlign: -3 }} /> {f.fecha(e.fecha_inicio)} → {f.fecha(e.fecha_fin)}{plazo ? ` · ${plazo}` : ''}</p>
-          </div>
-        </div>
-      </div>
+      <Cabecera icono={<Ring value={pct} size={56} tone={estado === 'retrasado' ? 'bad' : estado === 'terminado' ? 'ok' : undefined} />} titulo={e.nombre}
+        sub={<>Fase {e.orden} · {f.fecha(e.fecha_inicio)} → {f.fecha(e.fecha_fin)}{plazo && <><br />{plazo}</>}</>}
+        estado={<Status estado={estado} small />} />
 
       {estado === 'retrasado' && <div className="banner bad"><AlertTriangle size={20} />La fecha de fin ha pasado y la fase no está confirmada como terminada.</div>}
 

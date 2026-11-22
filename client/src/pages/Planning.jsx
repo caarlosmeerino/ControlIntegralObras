@@ -2,7 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, AlertTriangle, Flag, PlayCircle } from 'lucide-react';
 import { useData } from '../lib/app.jsx';
 import { qs } from '../lib/api.js';
-import { Loading, ErrorBox, Status, Empty } from '../components/ui.jsx';
+import { Loading, ErrorBox, Status, Empty, Cabecera } from '../components/ui.jsx';
 import { AvatarCliente } from '../components/ClientePicker.jsx';
 import { lunesDeSemana, semanaISO, masDias, semanasDelAnio, MESES, DIAS, estadoEtapa, colorCliente } from '../lib/obra.js';
 import { barrasSemana } from '../components/Calendario.jsx';
@@ -35,17 +35,14 @@ export default function Planning() {
   return (
     <>
       <Link to="/" className="volver"><ChevronLeft size={20} />Inicio</Link>
-      <div className="page-head">
-        <div>
-          <h1>Semana {S}</h1>
-          <p>{diaTxt(lunes)} – {diaTxt(domingo)} {domingo.slice(0, 4)}{A === actual.anio && S === actual.semana ? ' · esta semana' : ''}</p>
-        </div>
-        <div className="nav-semana">
+      <Cabecera icono={<span className="icono-cab icono-semana"><small>SEM</small>{S}</span>} titulo={`Semana ${S}`}
+        sub={`${diaTxt(lunes)} – ${diaTxt(domingo)} ${domingo.slice(0, 4)}`}
+        estado={A === actual.anio && S === actual.semana ? <span className="badge info">Esta semana</span> : null}
+        acciones={<div className="nav-semana">
           <button className="btn ghost icon sm" onClick={() => ir(-1)} aria-label="Semana anterior"><ChevronLeft size={22} /></button>
           <button className="btn sm" onClick={() => nav(`/planning/${actual.anio}/${actual.semana}`)}>Hoy</button>
           <button className="btn ghost icon sm" onClick={() => ir(1)} aria-label="Semana siguiente"><ChevronRight size={22} /></button>
-        </div>
-      </div>
+        </div>} />
 
       {loading && !data ? <Loading /> : !etapas.length ? <div className="card"><Empty icon={CalendarDays} title="No hay fases programadas esta semana" /></div> : (
         <>

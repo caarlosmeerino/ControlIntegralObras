@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, ChevronRight } from 'lucide-react';
 import { useApp } from '../lib/app.jsx';
 import { get, post, put, del, qs } from '../lib/api.js';
-import { Sheet, Field, Selector, Empty, BotonMas } from './ui.jsx';
+import { Sheet, Field, Selector, Empty, BotonMas, Cabecera } from './ui.jsx';
 import { Lupa } from './iconos.jsx';
 import IconoPieza, { FAMILIAS, GRUPOS, UNIDAD } from './IconoPieza.jsx';
 import * as f from '../lib/format.js';
@@ -122,10 +122,8 @@ export default function Registro() {
   const [n, setN] = useState(0);
   return (
     <>
-      <div className="page-head">
-        <div><h1>Piezas</h1></div>
-        {can('piezas.editar') && <BotonMas texto="Nueva pieza" onClick={() => setForm({})} />}
-      </div>
+      <Cabecera icono={<IconoPieza familia="heb" size={56} />} titulo="Registro de piezas" sub="Perfiles normalizados y piezas propias"
+        acciones={can('piezas.editar') && <BotonMas texto="Nueva pieza" onClick={() => setForm({})} />} />
       <ListaRegistro recargar={n} onElegir={(p) => (p.personalizada && can('piezas.editar') ? setForm(p) : null)}
         accesorio={(p) => (p.personalizada ? <span className="badge info">Propia</span> : <span className="muted xs">{p.norma}</span>)} />
       {form && <PiezaPropiaForm pieza={form.id ? form : null} onClose={() => setForm(null)} onSaved={() => setN((x) => x + 1)} />}
