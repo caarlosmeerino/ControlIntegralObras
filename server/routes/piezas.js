@@ -132,10 +132,11 @@ r.put('/:id', requirePerm('piezas.editar'), wrap(async (req, res) => {
     fecha_expedicion: req.body.fecha_expedicion !== undefined ? date(req.body.fecha_expedicion, 'expedición') : cur.fecha_expedicion,
     fecha_montaje: req.body.fecha_montaje !== undefined ? date(req.body.fecha_montaje, 'montaje') : cur.fecha_montaje,
     incidencia: req.body.incidencia !== undefined ? !!req.body.incidencia : cur.incidencia,
+    material_recibido: req.body.material_recibido !== undefined ? date(req.body.material_recibido, 'material recibido') : cur.material_recibido,
   };
   await q(`UPDATE piezas SET marca=$1, elemento=$2, perfil=$3, plano=$4, peso_unitario_kg=$5, cantidad=$6, observaciones=$7, m2_unitario=$8, ml_unitario=$9,
-           catalogo_id=$10, fecha_fabricacion=$11, fecha_expedicion=$12, fecha_montaje=$13, incidencia=$14, etapa_id=$16, actualizado_en=now() WHERE id=$15`,
-  [d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario, d.catalogo_id, ...Object.values(extra), id, d.etapa_id]);
+           catalogo_id=$10, fecha_fabricacion=$11, fecha_expedicion=$12, fecha_montaje=$13, incidencia=$14, material_recibido=$17, etapa_id=$16, actualizado_en=now() WHERE id=$15`,
+  [d.marca, d.elemento, d.perfil, d.plano, d.peso_unitario_kg, d.cantidad, d.observaciones, d.m2_unitario, d.ml_unitario, d.catalogo_id, extra.fecha_fabricacion, extra.fecha_expedicion, extra.fecha_montaje, extra.incidencia, id, d.etapa_id, extra.material_recibido]);
   const todo = { ...d, ...extra };
   const cambios = Object.keys(todo).filter((k) => String(todo[k] ?? '') !== String(cur[k] ?? ''));
   if (cambios.length) await audit({ query: q }, { entidad: 'pieza', entidadId: id, obraId: cur.obra_id, accion: 'editar',

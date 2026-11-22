@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { WifiOff, CalendarDays, Boxes, Users, HardHat, ChevronRight, UserRound, Moon, Sun, DatabaseBackup, LogOut } from 'lucide-react';
+import { WifiOff, CalendarDays, Boxes, Users, HardHat, ChevronRight, UserRound, Moon, Sun, DatabaseBackup, LogOut, ListChecks } from 'lucide-react';
 import * as Ic from './iconos.jsx';
 import { bloquearScroll } from './ui.jsx';
 import { useApp } from '../lib/app.jsx';
@@ -62,6 +62,7 @@ export default function Layout() {
   const enPlanning = loc.pathname === '/' || ['/planning', '/clientes', '/obras'].some((p) => loc.pathname.startsWith(p));
   const secciones = [
     { to: '/', label: 'Planning', icon: CalendarDays, on: enPlanning },
+    { to: '/pendiente', label: 'Pendiente', icon: ListChecks, on: loc.pathname.startsWith('/pendiente') },
     { to: '/piezas', label: 'Piezas', icon: Boxes, on: loc.pathname.startsWith('/piezas') },
     ...(can('personal.ver') ? [{ to: '/empleados', label: 'Empleados', icon: HardHat, on: loc.pathname.startsWith('/empleados') }] : []),
   ];

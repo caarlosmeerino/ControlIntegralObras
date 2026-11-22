@@ -1,11 +1,26 @@
 import { useState } from 'react';
-import { Plus, PackagePlus, ChevronLeft } from 'lucide-react';
+import { Plus, PackagePlus, ChevronLeft, Check } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { post, put, del, qs } from '../lib/api.js';
 import { Loading, Sheet, Field, Stepper, Empty, Selector } from './ui.jsx';
 import IconoPieza, { FAMILIAS } from './IconoPieza.jsx';
 import { ListaRegistro, PiezaPropiaForm, pesoTxt } from './Registro.jsx';
 import * as f from '../lib/format.js';
+
+export const PASOS = [
+  { campo: 'material_recibido', label: 'Material', corto: 'Falta material' },
+  { campo: 'fecha_fabricacion', label: 'Fabricada', corto: 'Por fabricar' },
+  { campo: 'fecha_expedicion', label: 'En obra', corto: 'En taller' },
+  { campo: 'fecha_montaje', label: 'Montada', corto: 'Por montar' },
+];
+/** Estado resumido para la lista */
+export function estadoPieza(p) {
+  if (p.fecha_montaje) return { txt: 'Montada', tone: 'ok' };
+  if (p.fecha_expedicion) return { txt: 'En obra · por montar', tone: 'info' };
+  if (p.fecha_fabricacion) return { txt: 'Fabricada', tone: 'info' };
+  if (p.material_recibido) return { txt: 'Por fabricar', tone: 'warn' };
+  return { txt: 'Falta material', tone: 'idle' };
+}
 
 const ELEMENTO = { ipe: 'viga', ipn: 'viga', upn: 'viga', upe: 'viga', hea: 'pilar', heb: 'pilar', hem: 'pilar', correa_c: 'correa', correa_z: 'correa', omega: 'correa', placa: 'placa', l: 'arriostramiento', lu: 'arriostramiento' };
 const PREFIJO = { viga: 'V', pilar: 'P', correa: 'C', placa: 'PL', arriostramiento: 'A' };
@@ -29,6 +44,12 @@ function Configurar({ obraId, pieza, item, piezas, etapas = [], etapaInicial, on
   const [plano, setPlano] = useState(pieza?.plano || '');
   const [obs, setObs] = useState(pieza?.observaciones || '');
   const [etapa, setEtapa] = useState(pieza ? (pieza.etapa_id || '') : (etapaInicial || ''));
+  const [estado, setEstado] = useState(() => Object.fromEntries(PASOS.map((x) => [x.campo, pieza?.[x.campo] || null])));
+  const cambiarPaso = (i) => {
+    // Marcar un paso marca también los anteriores; desmarcarlo quita los siguientes
+    const hoy = f.hoyISO(); const marcado = !!estado[PASOS[i].campo];
+    setEstado(Object.fromEntries(PASOS.map((x, j) => [x.campo, marcado ? (j < i ? estado[x.campo] : null) : (j <= i ? estado[x.campo] || hoy : estado[x.campo])])));
+  };
   const [busy, setBusy] = useState(false);
   const med = f.parseNum(medida) || 0;
   const pesoUd = unidad === 'ud' ? pesoBase : pesoBase * med;
@@ -42,6 +63,7 @@ function Configurar({ obraId, pieza, item, piezas, etapas = [], etapaInicial, on
         peso_unitario_kg: Math.round(pesoUd * 1000) / 1000, ml_unitario: unidad === 'm' ? med : 0, m2_unitario: unidad === 'm2' ? med : 0,
         catalogo_id: cat?.id || pieza?.catalogo_id || null,
         etapa_id: etapa || null,
+        ...estado,
       };
       if (pieza) await put(`/piezas/${pieza.id}`, body); else await post('/piezas', body);
       toast(pieza ? `${marca} actualizada.` : `${marca} añadida: ${f.kg(pesoUd * cantidad)}.`);
@@ -78,6 +100,16 @@ function Configurar({ obraId, pieza, item, piezas, etapas = [], etapaInicial, on
               <label className="medida"><input className="input" inputMode="decimal" value={medida} onChange={(e) => setMedida(e.target.value)} placeholder={unidad === 'm' ? 'Ej.: 6,5' : 'Ej.: 1,2'} autoFocus={!pieza} /><em>{unidad === 'm' ? 'm' : 'm²'}</em></label>
             </Field>
           )}
+          <Field label="Estado de la pieza" full>
+            <div className="pasos-pieza">
+              {PASOS.map((x, i) => (
+                <button key={x.campo} type="button" className={`paso-pieza ${estado[x.campo] ? 'on' : ''}`} onClick={() => cambiarPaso(i)} aria-pressed={!!estado[x.campo]}>
+                  <span className="paso-check">{estado[x.campo] ? <Check size={14} strokeWidth={3} /> : i + 1}</span>
+                  <span><b>{x.label}</b><small>{estado[x.campo] ? f.fecha(estado[x.campo]) : 'Pendiente'}</small></span>
+                </button>
+              ))}
+            </div>
+          </Field>
           <Field label="Observaciones" full><input className="input" value={obs} onChange={(e) => setObs(e.target.value)} /></Field>
         </div>
         <div className="peso-total">
@@ -96,6 +128,7 @@ function FilaPieza({ p, onClick }) {
       <span className="grow" style={{ minWidth: 0, textAlign: 'left' }}>
         <span className="lista-titulo"><span className="marca">{p.marca}</span> · {p.catalogo_nombre || p.perfil || f.ELEMENTOS[p.elemento]}</span>
         <span className="lista-sub">{p.cantidad} ud{p.ml_unitario ? ` × ${f.num(p.ml_unitario, 2)} m` : ''}{p.m2_unitario ? ` × ${f.num(p.m2_unitario, 2)} m²` : ''}{p.plano ? ` · plano ${p.plano}` : ''}</span>
+        <span className={`badge ${estadoPieza(p).tone} mt-s`}>{estadoPieza(p).txt}</span>
       </span>
       <b className="num">{f.kg(p.peso_total_kg)}</b>
     </button>

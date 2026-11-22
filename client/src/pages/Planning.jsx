@@ -92,6 +92,7 @@ export default function Planning() {
         )}
         {hayFiltro && <button type="button" className="btn ghost sm" onClick={() => setParams({ ...(vista !== 'pendiente' ? { ver: vista } : {}) }, { replace: true })}><X size={16} />Quitar filtros</button>}
       </div>
+      <Link to={`/pendiente?cuando=todo${fObra ? `&obra=${fObra}` : ''}${fEmp ? `&empleado=${fEmp}` : ''}&ver=fabricar`} className="enlace-pend mb">Ver piezas por fabricar, material y montaje <ChevronRight size={16} /></Link>
       {emp && !emp.obras.length && <div className="aviso-suave mb">{emp.nombre} no está en el equipo de ningún proyecto. Añádelo desde la pestaña «Equipo» de cada proyecto.</div>}
 
       {loading && !data ? <Loading /> : (

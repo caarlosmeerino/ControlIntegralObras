@@ -23,6 +23,7 @@ import catalogoR, { sembrarCatalogo } from './routes/catalogo.js';
 import etapasR from './routes/etapas.js';
 import { asignarSinDueño } from './propiedad.js';
 import empleadosR from './routes/empleados.js';
+import pendienteR from './routes/pendiente.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -55,6 +56,7 @@ app.use('/api/direcciones', direccionesR);
 app.use('/api/catalogo', catalogoR);
 app.use('/api/etapas', etapasR);
 app.use('/api/empleados', empleadosR);
+app.use('/api/pendiente', pendienteR);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 app.use(errorHandler);
 
