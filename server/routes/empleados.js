@@ -14,7 +14,7 @@ function leer(b) {
     categoria: str(b.categoria, 'puesto', { max: 60, def: '' }),
     seccion: oneOf(b.seccion || 'montaje', 'oficio', SECCIONES),
     telefono: str(b.telefono, 'teléfono', { max: 30 }),
-    documento: str(b.documento, 'DNI', { max: 30 }),
+    documento: '',
     activo: b.activo === undefined ? true : !!b.activo,
   };
 }
@@ -22,7 +22,7 @@ function leer(b) {
 // Lista de empleados con los proyectos en los que están
 r.get('/', requirePerm('personal.ver'), wrap(async (req, res) => {
   res.json(await many(
-    `SELECT t.id, t.nombre, t.categoria, t.seccion, t.telefono, t.documento, t.activo,
+    `SELECT t.id, t.nombre, t.categoria, t.seccion, t.telefono, t.activo,
        COALESCE(json_agg(json_build_object('id', o.id, 'nombre', o.nombre, 'estado', o.estado, 'funcion', oe.funcion) ORDER BY o.nombre) FILTER (WHERE o.id IS NOT NULL), '[]') AS obras
      FROM trabajadores t LEFT JOIN obra_empleados oe ON oe.trabajador_id=t.id LEFT JOIN obras o ON o.id=oe.obra_id
      WHERE ($1::boolean OR t.activo) GROUP BY t.id ORDER BY t.activo DESC, t.nombre`, [req.query.todos === '1']));

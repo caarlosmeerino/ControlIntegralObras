@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, HardHat, Phone } from 'lucide-react';
 import { useApp, useData } from '../lib/app.jsx';
 import { post, put } from '../lib/api.js';
-import { Loading, ErrorBox, Sheet, Field, BotonMas, Cabecera, IconoIniciales, Empty, Selector } from '../components/ui.jsx';
+import { Loading, ErrorBox, Sheet, Field, BotonMas, Cabecera, IconoIniciales, Empty } from '../components/ui.jsx';
 import { AvatarCliente } from '../components/ClientePicker.jsx';
 import { Lupa } from '../components/iconos.jsx';
 import * as f from '../lib/format.js';
 
 const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-export const OFICIOS = Object.entries(f.SECCIONES).map(([value, label]) => ({ value, label }));
 
 /** Alta y edición de un empleado (se usa aquí y desde el equipo de un proyecto) */
 export function EmpleadoForm({ inicial = {}, onClose, onSaved }) {
@@ -28,11 +27,8 @@ export function EmpleadoForm({ inicial = {}, onClose, onSaved }) {
     <Sheet title={e.id ? e.nombre : 'Nuevo empleado'} onClose={onClose}
       footer={<><button className="btn" onClick={onClose}>Cancelar</button><button className="btn primary" disabled={busy} onClick={guardar}>{e.id ? 'Guardar' : 'Añadir empleado'}</button></>}>
       <div className="form-grid">
-        <Field label="Nombre y apellidos" full><input className="input" value={e.nombre} onChange={set('nombre')} autoFocus={!e.id} placeholder="Ej.: Juan Pérez Martín" /></Field>
-        <Field label="Puesto"><input className="input" value={e.categoria} onChange={set('categoria')} placeholder="Oficial 1ª, jefe de obra…" /></Field>
-        <Field label="Oficio"><Selector titulo="Oficio" value={e.seccion} onChange={(v) => setE({ ...e, seccion: v })} options={OFICIOS} /></Field>
-        <Field label="Teléfono"><input className="input" type="tel" inputMode="tel" value={e.telefono} onChange={set('telefono')} /></Field>
-        <Field label="DNI / NIE (opcional)"><input className="input" value={e.documento || ''} onChange={set('documento')} autoCapitalize="characters" /></Field>
+        <Field label="Nombre y apellidos" full><input className="input" value={e.nombre} onChange={set('nombre')} autoFocus={!e.id} placeholder="Ej.: Juan Pérez Martín"
+          onKeyDown={(ev) => { if (ev.key === 'Enter' && e.nombre.trim()) guardar(); }} /></Field>
         {e.id && <label className="check full"><input type="checkbox" checked={e.activo} onChange={set('activo')} />Sigue en la empresa</label>}
       </div>
       {e.obras?.length > 0 && (
@@ -52,7 +48,6 @@ export function EmpleadoForm({ inicial = {}, onClose, onSaved }) {
   );
 }
 
-export const subEmpleado = (t) => [t.categoria, f.SECCIONES[t.seccion]].filter(Boolean).join(' · ');
 
 export default function Empleados() {
   const { can } = useApp();
@@ -72,7 +67,7 @@ export default function Empleados() {
         sub={`${f.plural(activos.length, 'empleado')} · ${enObra} en proyectos en curso`}
         acciones={can('personal.editar') && <BotonMas texto="Nuevo empleado" onClick={() => setEdit({})} />} />
       <div className="search busqueda-grande mb" style={{ maxWidth: 'none' }}><Lupa size={20} />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre, puesto, oficio o proyecto" aria-label="Buscar empleado" type="search" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre o proyecto" aria-label="Buscar empleado" type="search" />
       </div>
       {!lista.length ? <Empty icon={HardHat} title={t ? `Nadie coincide con «${q}»` : 'Todavía no hay empleados'}>{!t && 'Pulsa «Nuevo empleado» para crear la plantilla.'}</Empty> : (
         <div className="lista">
@@ -81,7 +76,7 @@ export default function Empleados() {
               <AvatarCliente nombre={e.nombre} size={44} />
               <span className="grow" style={{ minWidth: 0 }}>
                 <span className="lista-titulo" style={{ display: 'block' }}>{e.nombre}</span>
-                <span className="lista-sub" style={{ display: 'block' }}>{subEmpleado(e) || 'Sin puesto'}{!e.activo ? ' · ya no está' : ''}</span>
+                <span className="lista-sub" style={{ display: 'block' }}>{e.obras.length ? f.plural(e.obras.length, 'proyecto') : 'Sin proyecto asignado'}{!e.activo ? ' · ya no está' : ''}</span>
                 {e.obras.length > 0 && <span className="lista-sub" style={{ display: 'block', color: 'var(--accent)' }}>{e.obras.map((o) => o.nombre).join(' · ')}</span>}
               </span>
               {e.telefono && <a className="btn ghost icon" href={`tel:${e.telefono.replace(/\s/g, '')}`} onClick={(ev) => ev.stopPropagation()} aria-label={`Llamar a ${e.nombre}`}><Phone size={19} /></a>}

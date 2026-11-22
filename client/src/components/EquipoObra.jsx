@@ -5,7 +5,7 @@ import { get, post, put, del } from '../lib/api.js';
 import { Loading, Sheet, Empty } from './ui.jsx';
 import { AvatarCliente } from './ClientePicker.jsx';
 import { Lupa } from './iconos.jsx';
-import { EmpleadoForm, subEmpleado } from '../pages/Empleados.jsx';
+import { EmpleadoForm } from '../pages/Empleados.jsx';
 
 const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
@@ -40,7 +40,7 @@ function ElegirEmpleados({ yaEstan, onClose, onAñadir }) {
               <AvatarCliente nombre={e.nombre} size={40} />
               <span className="grow" style={{ minWidth: 0 }}>
                 <span className="lista-titulo" style={{ display: 'block' }}>{e.nombre}</span>
-                <span className="lista-sub" style={{ display: 'block' }}>{subEmpleado(e) || 'Sin puesto'}{e.obras.length ? ` · en ${e.obras.length} proyecto(s)` : ''}</span>
+                <span className="lista-sub" style={{ display: 'block' }}>{e.obras.length ? `En ${e.obras.length} proyecto(s)` : 'Sin proyecto asignado'}</span>
               </span>
               <span className="marcador">{sel.has(e.id) && <Check size={16} strokeWidth={3} />}</span>
             </button>
@@ -84,7 +84,7 @@ export default function EquipoObra({ obraId }) {
               <AvatarCliente nombre={e.nombre} size={42} />
               <span className="grow" style={{ minWidth: 0 }}>
                 <span className="lista-titulo" style={{ display: 'block' }}>{e.nombre}</span>
-                <span className="lista-sub" style={{ display: 'block' }}>{e.funcion ? <b style={{ color: 'var(--text-2)', fontWeight: 600 }}>{e.funcion} · </b> : ''}{subEmpleado(e) || 'Sin puesto'}</span>
+                <span className="lista-sub" style={{ display: 'block' }}>{e.funcion || (editar ? 'Toca para indicar su función' : '')}</span>
               </span>
               {e.telefono && <a className="btn ghost icon" href={`tel:${e.telefono.replace(/\s/g, '')}`} onClick={(ev) => ev.stopPropagation()} aria-label={`Llamar a ${e.nombre}`}><Phone size={19} /></a>}
             </button>
