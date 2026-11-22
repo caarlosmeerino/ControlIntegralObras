@@ -1065,3 +1065,12 @@ h1, h2, h3, h4 { letter-spacing: -.01em; font-weight: 600; }
 .lista-obras-pdf { max-height: 300px; overflow-y: auto; }
 .lista-obras-pdf .lista-fila { min-height: 54px; padding: 10px 14px; }
 .lista-obras-pdf small { font-size: .8rem; }
+
+/* ---------- Mapa ---------- */
+.mapa-marco { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: var(--surface-2); }
+.mapa-marco iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.mapa-dir { display: flex; gap: 8px; align-items: flex-start; font-size: .95rem; font-weight: 500; margin-bottom: 10px; }
+.mapa-dir svg { color: var(--bad); flex: none; margin-top: 3px; }
+.comprobar-mapa { margin-top: 8px; }
+button.enlace-mapa { border: 0; background: transparent; padding: 0; font: inherit; color: var(--link); cursor: pointer; text-align: left; display: inline-flex; gap: 6px; align-items: flex-start; }
+@media (max-width: 760px) { .mapa-marco { aspect-ratio: 3 / 4; max-height: 58dvh; } }

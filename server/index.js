@@ -33,6 +33,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"], imgSrc: ["'self'", 'data:', 'blob:'], mediaSrc: ["'self'", 'blob:'],
       styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'"], connectSrc: ["'self'"], workerSrc: ["'self'"],
+      frameSrc: ['https://maps.google.com', 'https://www.google.com'],
     },
   },
   crossOriginEmbedderPolicy: false,

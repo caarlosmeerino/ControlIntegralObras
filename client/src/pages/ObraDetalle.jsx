@@ -7,6 +7,7 @@ import PiezasProyecto from '../components/PiezasProyecto.jsx';
 import EquipoObra from '../components/EquipoObra.jsx';
 import { ArchivosObra } from '../components/Archivos.jsx';
 import ObraForm from '../components/ObraForm.jsx';
+import { DireccionPulsable } from '../components/Mapa.jsx';
 import { urlCliente, estadoEtapa, obraRetrasada, colorCliente } from '../lib/obra.js';
 import * as f from '../lib/format.js';
 
@@ -63,7 +64,7 @@ export default function ObraDetalle() {
         sub={<>{[o.codigo, o.ciudad].filter(Boolean).join(' · ')}{o.fecha_inicio && <><br />{f.fecha(o.fecha_inicio)} → {f.fecha(o.fecha_entrega)}</>}</>}
         estado={retrasada ? <Status estado="retrasado" small /> : <Status estado={o.estado} map={f.ESTADOS_OBRA} small />}
         acciones={<>
-          {hayUbicacion && <a className="btn-mas secundario" href={f.mapsUrl(o)} target="_blank" rel="noopener noreferrer" aria-label="Abrir en Google Maps" title="Google Maps"><Navigation size={18} /><span className="txt">Maps</span></a>}
+          {hayUbicacion && <DireccionPulsable obra={o} titulo={o.nombre} className="btn-mas secundario" ariaLabel="Cómo llegar y ver en el mapa"><Navigation size={18} /><span className="txt">Cómo llegar</span></DireccionPulsable>}
           {can('obras.editar') && <BotonMas texto="Editar" icon={Pencil} onClick={() => setEdit(true)} />}
         </>} />
 
@@ -81,9 +82,9 @@ export default function ObraDetalle() {
               <dt>Dirección</dt>
               <dd>
                 {hayUbicacion ? (
-                  <a className="enlace-mapa" href={f.mapsUrl(o)} target="_blank" rel="noopener noreferrer">
+                  <DireccionPulsable obra={o} titulo={o.nombre}>
                     <MapPin size={16} /><span>{[o.direccion, [o.codigo_postal, o.ciudad].filter(Boolean).join(' '), o.provincia && o.provincia !== o.ciudad ? o.provincia : ''].filter(Boolean).join(', ')}</span>
-                  </a>
+                  </DireccionPulsable>
                 ) : '—'}
               </dd>
               <dt>Piezas</dt><dd>{f.plural(o.resumen.n_piezas, 'marca')} · {f.kg(o.resumen.kg_unicos)}</dd>

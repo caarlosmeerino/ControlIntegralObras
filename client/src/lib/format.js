@@ -60,4 +60,10 @@ export const mapsUrl = (o) => {
   const q = [o.direccion, o.ciudad, o.provincia && o.provincia !== o.ciudad ? o.provincia : '', 'España'].filter(Boolean).join(', ');
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 };
+/** Ruta en Google Maps desde la ubicación actual hasta la obra (abre la app en el móvil) */
+export const rutaUrl = (o) => {
+  const dest = o.lat != null && o.lng != null ? `${o.lat},${o.lng}`
+    : [o.direccion, o.ciudad, o.provincia && o.provincia !== o.ciudad ? o.provincia : '', 'España'].filter(Boolean).join(', ');
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}&travelmode=driving`;
+};
 export const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];

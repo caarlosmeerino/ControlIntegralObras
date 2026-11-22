@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronRight, MapPin, Home, Route, Building2, Store, PenLine } from 'lucide-react';
+import { ChevronRight, MapPin, Home, Route, Building2, Store, PenLine, Map as MapIcon } from 'lucide-react';
 import { get, qs } from '../lib/api.js';
 import { bloquearScroll } from './ui.jsx';
+import { MapaSheet } from './Mapa.jsx';
 import { Lupa } from './iconos.jsx';
 
 const ICONO = { google: MapPin, portal: Home, callejero: Route, carretera: Route, municipio: Building2, poblacion: Building2, toponimo: Store };
@@ -12,6 +13,7 @@ const ICONO = { google: MapPin, portal: Home, callejero: Route, carretera: Route
  */
 export default function DireccionPicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
+  const [mapa, setMapa] = useState(false);
   return (
     <>
       <button type="button" className="input selector cliente-campo" onClick={() => setOpen(true)} aria-haspopup="dialog">
@@ -26,7 +28,11 @@ export default function DireccionPicker({ value, onChange }) {
         ) : <span className="grow muted">Buscar la dirección de la obra</span>}
         <ChevronRight size={18} className="muted" />
       </button>
+      {(value?.direccion || value?.ciudad) && (
+        <button type="button" className="btn sm comprobar-mapa" onClick={() => setMapa(true)}><MapIcon size={16} />Comprobar en el mapa</button>
+      )}
       {open && <Hoja inicial={value?.direccion || ''} onClose={() => setOpen(false)} onElegir={(v) => { onChange(v); setOpen(false); }} />}
+      {mapa && <MapaSheet obra={value} titulo="Comprobar la ubicación" onClose={() => setMapa(false)} />}
     </>
   );
 }
